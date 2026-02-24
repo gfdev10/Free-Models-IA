@@ -1,0 +1,58 @@
+{
+  "name": "modelsfree",
+  "version": "0.2.0",
+  "description": "Dashboard for discovering and comparing free coding LLM models across multiple providers",
+  "keywords": [
+    "nvidia",
+    "nim",
+    "llm",
+    "ai",
+    "models",
+    "benchmark",
+    "latency",
+    "availability",
+    "deepseek",
+    "qwen",
+    "llama",
+    "mistral",
+    "glm",
+    "kimi",
+    "gpt",
+    "chatgpt",
+    "openai",
+    "api",
+    "dashboard",
+    "nextjs"
+  ],
+  "homepage": "https://github.com/gfdev10/ModelsFreeAI#readme",
+  "bugs": {
+    "url": "https://github.com/gfdev10/ModelsFreeAI/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gfdev10/ModelsFreeAI.git"
+  },
+  "license": "MIT",
+  "author": "gfdev10",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -F @modelsfree/dashboard dev",
+    "build": "pnpm -r build",
+    "build:dashboard": "pnpm -F @modelsfree/dashboard build",
+    "start": "pnpm -F @modelsfree/dashboard start",
+    "clean": "pnpm -r clean",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

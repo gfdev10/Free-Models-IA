@@ -1,0 +1,49 @@
+MIT License with NVIDIA Disclaimer
+
+Copyright (c) 2026 gfdev10
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+NVIDIA DISCLAIMER
+
+This project is NOT affiliated with, endorsed by, or sponsored by NVIDIA 
+Corporation.
+
+"NVIDIA", "NIM", "NVIDIA NIM", and related trademarks are the property of 
+NVIDIA Corporation. Use of these trademarks is for descriptive purposes only 
+to indicate compatibility with NVIDIA's services.
+
+This software is an independent, community-developed tool that interfaces 
+with NVIDIA's publicly documented APIs. The author makes no claims about 
+the availability, reliability, or performance of NVIDIA's services.
+
+Users of this software are solely responsible for:
+- Complying with NVIDIA's Terms of Service
+- Managing their own API keys securely
+- Any costs or usage associated with their NVIDIA account
+
+The author shall not be held liable for any issues arising from the use of 
+NVIDIA's services, including but not limited to service interruptions, 
+API changes, billing disputes, or account-related issues.
+
+For official NVIDIA NIM documentation and terms, visit:
+https://build.nvidia.com
+https://www.nvidia.com
