@@ -24,13 +24,13 @@
     "dashboard",
     "nextjs"
   ],
-  "homepage": "https://github.com/gfdev10/ModelsFreeAI#readme",
+  "homepage": "https://github.com/gfdev10/Free-Models-IA#readme",
   "bugs": {
-    "url": "https://github.com/gfdev10/ModelsFreeAI/issues"
+    "url": "https://github.com/gfdev10/Free-Models-IA/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gfdev10/ModelsFreeAI.git"
+    "url": "git+https://github.com/gfdev10/Free-Models-IA.git"
   },
   "license": "MIT",
   "author": "gfdev10",

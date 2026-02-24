@@ -111,7 +111,7 @@ export default function RootLayout({
                     </span>
                     <span className="hidden sm:inline">•</span>
                     <a
-                      href="https://github.com/gfdev10/ModelsFreeAI"
+                      href="https://github.com/gfdev10/Free-Models-IA"
                       className="text-primary hover:underline"
                       target="_blank"
                       rel="noopener noreferrer"
