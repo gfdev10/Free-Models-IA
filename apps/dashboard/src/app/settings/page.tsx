@@ -481,56 +481,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Ping All Button */}
-      <div className="mb-6">
-        <button
-          onClick={handlePing}
-          disabled={pinging}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-        >
-          {pinging ? (
-            <>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              Testing...
-            </>
-          ) : (
-            <>
-              <Zap className="h-4 w-4" />
-              Test All Connections
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Ping Results */}
-      {pingResults.length > 0 && (
-        <div className="mb-6 p-4 rounded-lg border bg-card">
-          <h3 className="font-medium mb-3 text-sm">Connection Test Results</h3>
-          <div className="space-y-2">
-            {pingResults.map((result, i) => (
-              <div key={i} className="flex items-center justify-between text-sm">
-                <span className="font-medium">{result.provider}</span>
-                <div className="flex items-center gap-2">
-                  {result.status === 'pending' ? (
-                    <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-                  ) : result.status === 'success' ? (
-                    <>
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-green-500">{result.latency}ms</span>
-                    </>
-                  ) : (
-                    <>
-                      <X className="h-4 w-4 text-red-500" />
-                      <span className="text-red-500">{result.message}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {loading ? (
         <div className="flex items-center justify-center py-8">
           <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -593,6 +543,56 @@ export default function SettingsPage() {
             </table>
           </div>
         </>
+      )}
+
+      {/* Test All Connections Button */}
+      <div className="mt-6">
+        <button
+          onClick={handlePing}
+          disabled={pinging}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+        >
+          {pinging ? (
+            <>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              Testing...
+            </>
+          ) : (
+            <>
+              <Zap className="h-4 w-4" />
+              Test All Connections
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Ping Results */}
+      {pingResults.length > 0 && (
+        <div className="mt-4 p-4 rounded-lg border bg-card">
+          <h3 className="font-medium mb-3 text-sm">Connection Test Results</h3>
+          <div className="space-y-2">
+            {pingResults.map((result, i) => (
+              <div key={i} className="flex items-center justify-between text-sm">
+                <span className="font-medium">{result.provider}</span>
+                <div className="flex items-center gap-2">
+                  {result.status === 'pending' ? (
+                    <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                  ) : result.status === 'success' ? (
+                    <>
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-green-500">{result.latency}ms</span>
+                    </>
+                  ) : (
+                    <>
+                      <X className="h-4 w-4 text-red-500" />
+                      <span className="text-red-500">{result.message}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   )
