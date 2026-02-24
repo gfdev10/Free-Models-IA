@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Key, Eye, EyeOff, Check, X, ExternalLink, RefreshCw, Zap, AlertCircle } from 'lucide-react'
+import { Key, Eye, EyeOff, Check, X, ExternalLink, RefreshCw, Zap, AlertCircle, HelpCircle } from 'lucide-react'
 
 // Provider metadata for display
-const PROVIDER_INFO: Record<string, { name: string; url: string; envVar: string; keyPrefix?: string }> = {
+const PROVIDER_INFO: Record<string, { name: string; url: string; envVar: string; keyPrefix?: string; hint?: string }> = {
   NVIDIA_API_KEY: { 
     name: 'NVIDIA NIM', 
     url: 'https://build.nvidia.com', 
@@ -47,6 +47,20 @@ const PROVIDER_INFO: Record<string, { name: string; url: string; envVar: string;
     name: 'Mistral AI', 
     url: 'https://console.mistral.ai', 
     envVar: 'MISTRAL_API_KEY'
+  },
+  FIREWORKS_API_KEY: { 
+    name: 'Fireworks AI', 
+    url: 'https://fireworks.ai/api-keys', 
+    envVar: 'FIREWORKS_API_KEY',
+    keyPrefix: 'fw_',
+    hint: '$6 free credit on signup, then pay-per-use'
+  },
+  HYPERBOLIC_API_KEY: { 
+    name: 'Hyperbolic', 
+    url: 'https://app.hyperbolic.xyz/settings', 
+    envVar: 'HYPERBOLIC_API_KEY',
+    keyPrefix: 'sk_live_',
+    hint: '$1 free credit on signup, then pay-per-use'
   },
 }
 
@@ -100,6 +114,14 @@ function ProviderCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className="font-medium text-sm sm:text-base">{info.name}</span>
+            {info.hint && (
+              <div className="group relative">
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                  {info.hint}
+                </div>
+              </div>
+            )}
             {isConfigured ? (
               <span className="flex items-center gap-1 text-xs text-green-500">
                 <Check className="h-3 w-3" />
@@ -221,6 +243,14 @@ function ProviderRow({
       <td className="p-3">
         <div className="flex items-center gap-2">
           <span className="font-medium">{info.name}</span>
+          {info.hint && (
+            <div className="group relative">
+              <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                {info.hint}
+              </div>
+            </div>
+          )}
           {isConfigured ? (
             <Check className="h-4 w-4 text-green-500" />
           ) : (

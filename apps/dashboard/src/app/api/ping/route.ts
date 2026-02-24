@@ -34,6 +34,14 @@ const PROVIDER_ENDPOINTS: Record<string, { url: string; model: string }> = {
     url: 'https://api.mistral.ai/v1/chat/completions',
     model: 'open-mistral-nemo',
   },
+  FIREWORKS_API_KEY: {
+    url: 'https://api.fireworks.ai/inference/v1/chat/completions',
+    model: 'accounts/fireworks/models/glm-5',
+  },
+  HYPERBOLIC_API_KEY: {
+    url: 'https://api.hyperbolic.xyz/v1/chat/completions',
+    model: 'Qwen/Qwen2.5-72B-Instruct',
+  },
 }
 
 async function pingProvider(

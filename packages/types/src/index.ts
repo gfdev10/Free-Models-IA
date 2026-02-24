@@ -49,6 +49,8 @@ export const ProviderKeySchema = z.enum([
   'codestral',
   'googleai',
   'mistral',
+  'fireworks',
+  'hyperbolic',
 ])
 export type ProviderKey = z.infer<typeof ProviderKeySchema>
 
@@ -266,6 +268,7 @@ export const PROVIDER_METADATA: Record<ProviderKey, {
   envVarName: string
   keyPrefix?: string
   hint?: string
+  isPaidAfterCredit?: boolean
 }> = {
   nvidia: {
     name: 'NIM',
@@ -322,5 +325,21 @@ export const PROVIDER_METADATA: Record<ProviderKey, {
     envVarName: 'MISTRAL_API_KEY',
     keyPrefix: '',
     hint: 'La Plateforme → API Keys (free tier available)',
+  },
+  fireworks: {
+    name: 'Fireworks AI',
+    url: 'https://api.fireworks.ai/inference/v1/chat/completions',
+    envVarName: 'FIREWORKS_API_KEY',
+    keyPrefix: 'fw_',
+    hint: '$6 free credit on signup, then pay-per-use',
+    isPaidAfterCredit: true,
+  },
+  hyperbolic: {
+    name: 'Hyperbolic',
+    url: 'https://api.hyperbolic.xyz/v1/chat/completions',
+    envVarName: 'HYPERBOLIC_API_KEY',
+    keyPrefix: 'sk_live_',
+    hint: '$1 free credit on signup, then pay-per-use',
+    isPaidAfterCredit: true,
   },
 }

@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/models-112-76b900?logo=nvidia" alt="models count">
-  <img src="https://img.shields.io/badge/providers-8-blue" alt="providers count">
+  <img src="https://img.shields.io/badge/models-132-76b900?logo=nvidia" alt="models count">
+  <img src="https://img.shields.io/badge/providers-10-blue" alt="providers count">
   <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" alt="Next.js">
   <img src="https://img.shields.io/npm/l/modelsfree?color=76b900" alt="license">
 </p>
@@ -9,7 +9,7 @@
 
 <p align="center">
   <strong>Dashboard for discovering and comparing free coding LLM models</strong><br>
-  <sub>Explore 112 models from 8 providers — NVIDIA NIM, Groq, Cerebras, SambaNova, OpenRouter, Codestral, Google AI, and Mistral AI</sub>
+  <sub>Explore 132 models from 10 providers — NVIDIA NIM, Groq, Cerebras, SambaNova, OpenRouter, Codestral, Google AI, Mistral AI, Fireworks AI, and Hyperbolic</sub>
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 ## ✨ Features
 
 ### Dashboard
-- **📊 Model Explorer** — Browse all 112 models with search and filters
+- **📊 Model Explorer** — Browse all 132 models with search and filters
 - **📈 Statistics** — View tier distribution and provider metrics
 - **⚖️ Model Comparison** — Compare models side-by-side
 - **🔑 API Key Management** — Configure and test provider keys
@@ -34,7 +34,7 @@
 
 ### Data
 - **🎯 Coding-focused** — Only LLM models optimized for code generation
-- **🌐 Multi-provider** — 8 providers with free tiers
+- **🌐 Multi-provider** — 10 providers with free tiers or credits
 - **🏷 Tier System** — Models ranked S+, S, A+, A, A-, B+, B, B-, C+, C, D
 - **📏 Context Windows** — From 4K to 10M tokens
 - **🆓 Free Limits** — Clear info on free tier limits per model
@@ -61,7 +61,7 @@ modelsfree/
 |---------|-------------|
 | `@modelsfree/types` | TypeScript types and Zod schemas for runtime validation |
 | `@modelsfree/core` | Pure business logic: metrics, sorting, filtering |
-| `@modelsfree/providers` | Provider configurations and model data (112 models) |
+| `@modelsfree/providers` | Provider configurations and model data (132 models) |
 
 ### Dashboard Stack
 
@@ -85,8 +85,8 @@ modelsfree/
 
 ```bash
 # Clone the repository
-git clone https://github.com/gfdev10/free-coding-models.git
-cd free-coding-models
+git clone https://github.com/gfdev10/Free-Models-IA.git
+cd Free-Models-IA
 
 # Install dependencies
 pnpm install
@@ -118,6 +118,8 @@ pnpm start
 | **Codestral** | 1 | 30 req/min | [Get Key](https://codestral.mistral.ai) |
 | **Google AI** | 6 | 14.4K req/day | [Get Key](https://aistudio.google.com/apikey) |
 | **Mistral AI** | 8 | Free tier available | [Get Key](https://console.mistral.ai) |
+| **Fireworks AI** | 7 | $6 free credit | [Get Key](https://fireworks.ai/api-keys) |
+| **Hyperbolic** | 13 | $1 free credit | [Get Key](https://app.hyperbolic.xyz/settings) |
 
 ---
 
@@ -146,6 +148,8 @@ OPENROUTER_API_KEY=sk-or-xxx
 CODESTRAL_API_KEY=xxx
 GOOGLE_API_KEY=AIzaxxx
 MISTRAL_API_KEY=xxx
+FIREWORKS_API_KEY=fw_xxx
+HYPERBOLIC_API_KEY=sk_live_xxx
 ```
 
 ---

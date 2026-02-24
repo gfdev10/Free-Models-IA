@@ -5,8 +5,8 @@
 This is a **dashboard-only** project for discovering and comparing free coding LLM models. The project uses a monorepo architecture with pnpm workspaces.
 
 **Current Stats:**
-- **112 models** from **8 providers**
-- Providers: NVIDIA NIM, Groq, Cerebras, SambaNova, OpenRouter, Codestral, Google AI, Mistral AI
+- **132 models** from **10 providers**
+- Providers: NVIDIA NIM, Groq, Cerebras, SambaNova, OpenRouter, Codestral, Google AI, Mistral AI, Fireworks AI, Hyperbolic
 
 ## Architecture
 
@@ -75,7 +75,7 @@ After completing any feature or fix, the agent MUST:
 |---------|-------------|
 | `@modelsfree/types` | TypeScript types, Zod schemas, tier/verdict definitions |
 | `@modelsfree/core` | Pure business logic: metrics, sorting, filtering, ping logic |
-| `@modelsfree/providers` | Provider configurations, model data (112 models), API metadata |
+| `@modelsfree/providers` | Provider configurations, model data (132 models), API metadata |
 
 ## Dashboard Stack
 
@@ -127,6 +127,8 @@ SAMBANOVA_API_KEY=...
 CODESTRAL_API_KEY=...
 GOOGLE_API_KEY=...
 MISTRAL_API_KEY=...
+FIREWORKS_API_KEY=...
+HYPERBOLIC_API_KEY=...
 ```
 
 Copy `.env.example` to `.env.local` and fill in your keys.
