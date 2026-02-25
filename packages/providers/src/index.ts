@@ -108,6 +108,14 @@ export const providers: Record<ProviderKey, ProviderConfig> = {
     keyPrefix: 'sk_live_',
     hint: '$1 free credit on signup, then pay-per-use',
   },
+  scaleway: {
+    key: 'scaleway',
+    name: 'Scaleway',
+    url: 'https://api.scaleway.ai/v1/chat/completions',
+    envVarName: 'SCALEWAY_API_KEY',
+    keyPrefix: '',
+    hint: 'Free tier available',
+  },
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -327,6 +335,22 @@ export const hyperbolicModels: ModelTuple[] = [
   ['meta-llama/Llama-3.2-3B-Instruct', 'Llama 3.2 3B', 'B-', '20.0%', '131k'],
 ]
 
+/**
+ * Scaleway models - https://scaleway.ai
+ * Free tier available
+ */
+export const scalewayModels: ModelTuple[] = [
+  // Llama models
+  ['llama-3.1-8b-instruct', 'Llama 3.1 8B', 'B', '28.8%', '128k'],
+  ['llama-3.3-70b-instruct', 'Llama 3.3 70B', 'A-', '39.5%', '128k'],
+  // Mistral models
+  ['mistral-nemo-instruct-2407', 'Mistral Nemo', 'B+', '32.0%', '128k'],
+  ['mistral-small-24b-instruct-2501', 'Mistral Small 24B', 'A-', '38.0%', '128k'],
+  // Qwen models
+  ['qwen2.5-coder-32b-instruct', 'Qwen2.5 Coder 32B', 'A', '46.0%', '32k'],
+  ['qwen2.5-72b-instruct', 'Qwen2.5 72B', 'S', '65.0%', '128k'],
+]
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SOURCES MAP (backward compatible with sources.js)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -384,6 +408,11 @@ export const sources: Record<ProviderKey, { name: string; url: string; models: M
     name: providers.hyperbolic.name,
     url: providers.hyperbolic.url,
     models: hyperbolicModels,
+  },
+  scaleway: {
+    name: providers.scaleway.name,
+    url: providers.scaleway.url,
+    models: scalewayModels,
   },
 }
 

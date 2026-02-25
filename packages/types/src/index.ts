@@ -51,6 +51,7 @@ export const ProviderKeySchema = z.enum([
   'mistral',
   'fireworks',
   'hyperbolic',
+  'scaleway',
 ])
 export type ProviderKey = z.infer<typeof ProviderKeySchema>
 
@@ -341,5 +342,12 @@ export const PROVIDER_METADATA: Record<ProviderKey, {
     keyPrefix: 'sk_live_',
     hint: '$1 free credit on signup, then pay-per-use',
     isPaidAfterCredit: true,
+  },
+  scaleway: {
+    name: 'Scaleway',
+    url: 'https://api.scaleway.ai/v1/chat/completions',
+    envVarName: 'SCALEWAY_API_KEY',
+    keyPrefix: '',
+    hint: 'Free tier available',
   },
 }

@@ -1,10 +1,18 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { MODELS, providers } from '@modelsfree/providers'
 import { TIER_ORDER_CONST } from '@modelsfree/core'
 import type { Tier, ProviderKey } from '@modelsfree/types'
-import { Search, Filter, X, ChevronDown, SlidersHorizontal } from 'lucide-react'
+import { Search, Filter, X, ChevronDown, SlidersHorizontal, Activity, Pause, Play, Check, AlertCircle, RefreshCw } from 'lucide-react'
+
+// Model ping status type
+interface ModelPingStatus {
+  status: 'idle' | 'pending' | 'success' | 'error'
+  latency?: number
+  message?: string
+  lastChecked?: number
+}
 
 // Tier Badge Component
 function TierBadge({ tier }: { tier: Tier }) {
@@ -122,7 +130,13 @@ function DropdownFilter<T extends string>({
 }
 
 // Model Card for mobile
-function ModelCard({ model }: { model: typeof MODELS[0] }) {
+function ModelCard({ 
+  model, 
+  pingStatus 
+}: { 
+  model: typeof MODELS[0]
+  pingStatus?: ModelPingStatus
+}) {
   const [modelId, label, tier, sweScore, ctx, providerKey] = model
   
   return (
@@ -132,7 +146,12 @@ function ModelCard({ model }: { model: typeof MODELS[0] }) {
           <p className="font-medium text-sm truncate">{label}</p>
           <p className="text-xs text-muted-foreground font-mono truncate">{modelId}</p>
         </div>
-        <TierBadge tier={tier as Tier} />
+        <div className="flex items-center gap-2">
+          {pingStatus && pingStatus.status !== 'idle' && (
+            <StatusIndicator status={pingStatus} />
+          )}
+          <TierBadge tier={tier as Tier} />
+        </div>
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span className="font-mono">{sweScore}</span>
@@ -145,6 +164,29 @@ function ModelCard({ model }: { model: typeof MODELS[0] }) {
   )
 }
 
+// Status Indicator Component
+function StatusIndicator({ status }: { status: ModelPingStatus }) {
+  if (status.status === 'pending') {
+    return <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+  }
+  if (status.status === 'success') {
+    return (
+      <div className="flex items-center gap-1 text-green-500">
+        <Check className="h-4 w-4" />
+        {status.latency && <span className="text-xs">{status.latency}ms</span>}
+      </div>
+    )
+  }
+  if (status.status === 'error') {
+    return (
+      <div className="flex items-center gap-1 text-red-500" title={status.message}>
+        <AlertCircle className="h-4 w-4" />
+      </div>
+    )
+  }
+  return null
+}
+
 export default function ExplorerPage() {
   // Filter state
   const [search, setSearch] = useState('')
@@ -153,6 +195,13 @@ export default function ExplorerPage() {
   const [sortBy, setSortBy] = useState<'name' | 'tier' | 'swe' | 'ctx'>('tier')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [showFilters, setShowFilters] = useState(false)
+  
+  // Model ping monitoring state
+  const [liveMonitoring, setLiveMonitoring] = useState(false)
+  const [pingStatuses, setPingStatuses] = useState<Record<string, ModelPingStatus>>({})
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const MONITORING_INTERVAL = 30 // Fixed 30 seconds interval
   
   // Filter options
   const tierOptions = TIER_ORDER_CONST.map(tier => ({ value: tier, label: tier }))
@@ -222,6 +271,104 @@ export default function ExplorerPage() {
     
     return result
   }, [search, selectedTier, selectedProvider, sortBy, sortDir])
+  
+  // Get API keys from localStorage
+  const getApiKey = useCallback((providerKey: string): string | null => {
+    if (typeof window === 'undefined') return null
+    const envVarName = providers[providerKey as ProviderKey]?.envVarName
+    if (!envVarName) return null
+    return localStorage.getItem(envVarName)
+  }, [])
+  
+  // Ping a single model
+  const pingModel = useCallback(async (modelId: string, providerKey: string) => {
+    const key = `${providerKey}-${modelId}`
+    
+    // Set pending status
+    setPingStatuses(prev => ({
+      ...prev,
+      [key]: { status: 'pending' }
+    }))
+    
+    const apiKey = getApiKey(providerKey)
+    if (!apiKey) {
+      setPingStatuses(prev => ({
+        ...prev,
+        [key]: { status: 'error', message: 'No API key' }
+      }))
+      return
+    }
+    
+    try {
+      const res = await fetch('/api/ping-model', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          provider: providerKey, 
+          model: modelId, 
+          apiKey 
+        }),
+      })
+      const data = await res.json()
+      
+      setPingStatuses(prev => ({
+        ...prev,
+        [key]: {
+          status: data.success ? 'success' : 'error',
+          latency: data.latency,
+          message: data.message,
+          lastChecked: Date.now()
+        }
+      }))
+    } catch {
+      setPingStatuses(prev => ({
+        ...prev,
+        [key]: { status: 'error', message: 'Network error' }
+      }))
+    }
+  }, [getApiKey])
+  
+  // Live monitoring effect - ping all models simultaneously
+  useEffect(() => {
+    if (liveMonitoring && filteredModels.length > 0) {
+      // Ping all models simultaneously
+      const pingAllSimultaneously = async () => {
+        const promises = filteredModels.map(([modelId, , , , , providerKey]) => 
+          pingModel(modelId, providerKey)
+        )
+        await Promise.all(promises)
+      }
+      
+      pingAllSimultaneously()
+      
+      // Schedule next batch
+      intervalRef.current = setTimeout(() => {
+        // Force re-render to trigger next batch
+        setCurrentIndex((prev) => prev + 1)
+      }, MONITORING_INTERVAL * 1000)
+    } else {
+      if (intervalRef.current) {
+        clearTimeout(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+    
+    return () => {
+      if (intervalRef.current) {
+        clearTimeout(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [liveMonitoring, filteredModels, pingModel, currentIndex])
+  
+  const toggleLiveMonitoring = () => {
+    if (liveMonitoring) {
+      setLiveMonitoring(false)
+    } else {
+      setCurrentIndex(0)
+      setLiveMonitoring(true)
+    }
+  }
   
   // Clear all filters
   const clearFilters = () => {
@@ -335,16 +482,59 @@ export default function ExplorerPage() {
         </div>
       </div>
       
-      {/* Results Count */}
-      <div className="text-xs sm:text-sm text-muted-foreground">
-        Showing {filteredModels.length} of {MODELS.length} models
+      {/* Results Count and Live Monitoring Controls */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-xs sm:text-sm text-muted-foreground">
+          Showing {filteredModels.length} of {MODELS.length} models
+        </div>
+        
+        {/* Live Monitoring Controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleLiveMonitoring}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors ${
+              liveMonitoring 
+                ? 'bg-green-500 text-white hover:bg-green-600' 
+                : 'bg-muted text-foreground hover:bg-muted/80'
+            }`}
+          >
+            {liveMonitoring ? (
+              <>
+                <Pause className="h-4 w-4" />
+                Stop
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4" />
+                Live Ping
+              </>
+            )}
+          </button>
+          
+          {liveMonitoring && (
+            <div className="flex items-center gap-1 text-sm text-green-500">
+              <Activity className="h-4 w-4 animate-pulse" />
+              <span>
+                Pinging all {filteredModels.length} models simultaneously
+                {selectedProvider && ` (${providers[selectedProvider]?.name})`}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Models Grid - Mobile */}
       <div className="md:hidden space-y-2">
-        {filteredModels.map(([modelId, , , , , providerKey]) => (
-          <ModelCard key={`${providerKey}-${modelId}`} model={MODELS.find(m => m[0] === modelId && m[5] === providerKey)!} />
-        ))}
+        {filteredModels.map(([modelId, , , , , providerKey]) => {
+          const key = `${providerKey}-${modelId}`
+          return (
+            <ModelCard 
+              key={key} 
+              model={MODELS.find(m => m[0] === modelId && m[5] === providerKey)!} 
+              pingStatus={pingStatuses[key]}
+            />
+          )
+        })}
         {filteredModels.length === 0 && (
           <div className="p-8 text-center text-muted-foreground text-sm">
             No models found matching your filters
@@ -363,30 +553,40 @@ export default function ExplorerPage() {
                 <th className="text-left p-3 text-sm font-medium">SWE Score</th>
                 <th className="text-left p-3 text-sm font-medium">Context</th>
                 <th className="text-left p-3 text-sm font-medium">Provider</th>
+                <th className="text-left p-3 text-sm font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
-              {filteredModels.map(([modelId, label, tier, sweScore, ctx, providerKey]) => (
-                <tr 
-                  key={`${providerKey}-${modelId}`} 
-                  className="border-b last:border-0 hover:bg-muted/30 transition-colors"
-                >
-                  <td className="p-3">
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{label}</p>
-                      <p className="text-xs text-muted-foreground font-mono truncate">{modelId}</p>
-                    </div>
-                  </td>
-                  <td className="p-3"><TierBadge tier={tier as Tier} /></td>
-                  <td className="p-3 font-mono text-sm">{sweScore}</td>
-                  <td className="p-3 text-sm">{ctx}</td>
-                  <td className="p-3">
-                    <span className="text-sm truncate block">
-                      {providers[providerKey as ProviderKey]?.name || providerKey}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {filteredModels.map(([modelId, label, tier, sweScore, ctx, providerKey]) => {
+                const key = `${providerKey}-${modelId}`
+                const status = pingStatuses[key]
+                return (
+                  <tr 
+                    key={key} 
+                    className="border-b last:border-0 hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="p-3">
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{label}</p>
+                        <p className="text-xs text-muted-foreground font-mono truncate">{modelId}</p>
+                      </div>
+                    </td>
+                    <td className="p-3"><TierBadge tier={tier as Tier} /></td>
+                    <td className="p-3 font-mono text-sm">{sweScore}</td>
+                    <td className="p-3 text-sm">{ctx}</td>
+                    <td className="p-3">
+                      <span className="text-sm truncate block">
+                        {providers[providerKey as ProviderKey]?.name || providerKey}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      {status && status.status !== 'idle' && (
+                        <StatusIndicator status={status} />
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

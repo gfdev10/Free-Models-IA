@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Key, Eye, EyeOff, Check, X, ExternalLink, RefreshCw, Zap, AlertCircle, HelpCircle } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Key, Eye, EyeOff, Check, X, ExternalLink, RefreshCw, Zap, AlertCircle, HelpCircle, Activity, Pause, Play } from 'lucide-react'
 
 // Provider metadata for display
 const PROVIDER_INFO: Record<string, { name: string; url: string; envVar: string; keyPrefix?: string; hint?: string }> = {
@@ -61,6 +61,12 @@ const PROVIDER_INFO: Record<string, { name: string; url: string; envVar: string;
     envVar: 'HYPERBOLIC_API_KEY',
     keyPrefix: 'sk_live_',
     hint: '$1 free credit on signup, then pay-per-use'
+  },
+  SCALEWAY_API_KEY: { 
+    name: 'Scaleway', 
+    url: 'https://console.scaleway.com/iam/api-keys', 
+    envVar: 'SCALEWAY_API_KEY',
+    hint: 'Free tier available'
   },
 }
 
@@ -346,6 +352,11 @@ export default function SettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [pinging, setPinging] = useState(false)
   const [pingResults, setPingResults] = useState<PingResult[]>([])
+  
+  // Live monitoring state
+  const [liveMonitoring, setLiveMonitoring] = useState(false)
+  const [monitoringInterval, setMonitoringInterval] = useState(5) // seconds
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Load keys from localStorage on mount
   useEffect(() => {
@@ -399,7 +410,7 @@ export default function SettingsPage() {
     }
   }
 
-  const handlePing = async () => {
+  const handlePing = useCallback(async () => {
     setPinging(true)
     setPingResults([])
 
@@ -463,6 +474,36 @@ export default function SettingsPage() {
     }
 
     setPinging(false)
+  }, [keys])
+
+  // Live monitoring effect
+  useEffect(() => {
+    if (liveMonitoring) {
+      // Run immediately
+      handlePing()
+      // Then run at interval
+      intervalRef.current = setInterval(handlePing, monitoringInterval * 1000)
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+  }, [liveMonitoring, monitoringInterval, handlePing])
+
+  const toggleLiveMonitoring = () => {
+    if (liveMonitoring) {
+      setLiveMonitoring(false)
+    } else {
+      setLiveMonitoring(true)
+    }
   }
 
   const startEditing = (keyName: string) => {
@@ -576,24 +617,74 @@ export default function SettingsPage() {
       )}
 
       {/* Test All Connections Button */}
-      <div className="mt-6">
-        <button
-          onClick={handlePing}
-          disabled={pinging}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
-        >
-          {pinging ? (
-            <>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              Testing...
-            </>
-          ) : (
-            <>
-              <Zap className="h-4 w-4" />
-              Test All Connections
-            </>
-          )}
-        </button>
+      <div className="mt-6 space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handlePing}
+            disabled={pinging || liveMonitoring}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
+          >
+            {pinging ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                Testing...
+              </>
+            ) : (
+              <>
+                <Zap className="h-4 w-4" />
+                Test All Connections
+              </>
+            )}
+          </button>
+
+          {/* Live Monitoring Toggle */}
+          <button
+            onClick={toggleLiveMonitoring}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+              liveMonitoring 
+                ? 'bg-green-500 text-white hover:bg-green-600' 
+                : 'bg-muted text-foreground hover:bg-muted/80'
+            }`}
+          >
+            {liveMonitoring ? (
+              <>
+                <Pause className="h-4 w-4" />
+                Stop Monitoring
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4" />
+                Start Live Monitoring
+              </>
+            )}
+          </button>
+
+          {/* Interval Selector */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Interval:</label>
+            <select
+              value={monitoringInterval}
+              onChange={(e) => setMonitoringInterval(Number(e.target.value))}
+              disabled={liveMonitoring}
+              className="px-2 py-1.5 text-sm border rounded-md bg-background disabled:opacity-50"
+            >
+              <option value={1}>1s</option>
+              <option value={2}>2s</option>
+              <option value={5}>5s</option>
+              <option value={10}>10s</option>
+              <option value={30}>30s</option>
+              <option value={60}>60s</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Live Status Indicator */}
+        {liveMonitoring && (
+          <div className="flex items-center gap-2 text-sm text-green-500">
+            <Activity className="h-4 w-4 animate-pulse" />
+            <span>Live monitoring active - pinging every {monitoringInterval}s</span>
+          </div>
+        )}
       </div>
 
       {/* Ping Results */}

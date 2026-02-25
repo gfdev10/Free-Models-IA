@@ -1,58 +1,71 @@
 import { NextResponse } from 'next/server'
 
-// Provider configurations
-const PROVIDER_ENDPOINTS: Record<string, { url: string; model: string }> = {
-  NVIDIA_API_KEY: {
+// Provider configurations with their API endpoints
+const PROVIDER_CONFIGS: Record<string, { 
+  url: string; 
+  envVar: string;
+  getModelUrl?: (model: string) => string;
+}> = {
+  nvidia: {
     url: 'https://integrate.api.nvidia.com/v1/chat/completions',
-    model: 'meta/llama-3.1-8b-instruct',
+    envVar: 'NVIDIA_API_KEY',
   },
-  GROQ_API_KEY: {
+  groq: {
     url: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'llama-3.1-8b-instant',
+    envVar: 'GROQ_API_KEY',
   },
-  CEREBRAS_API_KEY: {
+  cerebras: {
     url: 'https://api.cerebras.ai/v1/chat/completions',
-    model: 'llama-3.1-8b',
+    envVar: 'CEREBRAS_API_KEY',
   },
-  SAMBANOVA_API_KEY: {
+  sambanova: {
     url: 'https://api.sambanova.ai/v1/chat/completions',
-    model: 'Meta-Llama-3.1-8B-Instruct',
+    envVar: 'SAMBANOVA_API_KEY',
   },
-  OPENROUTER_API_KEY: {
+  openrouter: {
     url: 'https://openrouter.ai/api/v1/chat/completions',
-    model: 'openrouter/free',
+    envVar: 'OPENROUTER_API_KEY',
   },
-  CODESTRAL_API_KEY: {
+  codestral: {
     url: 'https://codestral.mistral.ai/v1/chat/completions',
-    model: 'codestral-latest',
+    envVar: 'CODESTRAL_API_KEY',
   },
-  GOOGLE_API_KEY: {
-    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemma-3-4b-it:generateContent',
-    model: 'gemma-3-4b-it',
+  googleai: {
+    url: 'https://generativelanguage.googleapis.com/v1beta/models',
+    envVar: 'GOOGLE_API_KEY',
+    getModelUrl: (model: string) => 
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
   },
-  MISTRAL_API_KEY: {
+  mistral: {
     url: 'https://api.mistral.ai/v1/chat/completions',
-    model: 'open-mistral-nemo',
+    envVar: 'MISTRAL_API_KEY',
   },
-  FIREWORKS_API_KEY: {
+  fireworks: {
     url: 'https://api.fireworks.ai/inference/v1/chat/completions',
-    model: 'accounts/fireworks/models/glm-5',
+    envVar: 'FIREWORKS_API_KEY',
   },
-  HYPERBOLIC_API_KEY: {
+  hyperbolic: {
     url: 'https://api.hyperbolic.xyz/v1/chat/completions',
-    model: 'Qwen/Qwen2.5-72B-Instruct',
+    envVar: 'HYPERBOLIC_API_KEY',
   },
-  SCALEWAY_API_KEY: {
+  scaleway: {
     url: 'https://api.scaleway.ai/v1/chat/completions',
-    model: 'llama-3.1-8b-instruct',
+    envVar: 'SCALEWAY_API_KEY',
   },
 }
 
-async function pingProvider(
-  keyName: string,
+interface PingRequest {
+  provider: string
+  model: string
+  apiKey: string
+}
+
+async function pingModel(
+  provider: string, 
+  model: string, 
   apiKey: string
 ): Promise<{ success: boolean; latency?: number; message?: string }> {
-  const config = PROVIDER_ENDPOINTS[keyName]
+  const config = PROVIDER_CONFIGS[provider]
   if (!config) {
     return { success: false, message: 'Unknown provider' }
   }
@@ -60,10 +73,10 @@ async function pingProvider(
   const startTime = Date.now()
 
   try {
-    // Different request formats for different providers
-    if (keyName === 'GOOGLE_API_KEY') {
-      // Google AI has a different API format
-      const res = await fetch(`${config.url}?key=${apiKey}`, {
+    // Google AI has a different API format
+    if (provider === 'googleai') {
+      const url = config.getModelUrl ? config.getModelUrl(model) : `${config.url}/${model}:generateContent`
+      const res = await fetch(`${url}?key=${apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,8 +91,13 @@ async function pingProvider(
 
       if (res.ok) {
         return { success: true, latency }
+      } else if (res.status === 404) {
+        return { success: false, latency, message: 'Model not found' }
+      } else if (res.status === 401) {
+        return { success: false, latency, message: 'Invalid API key' }
+      } else if (res.status === 429) {
+        return { success: false, latency, message: 'Rate limited' }
       } else {
-        const error = await res.text()
         return { success: false, latency, message: `HTTP ${res.status}` }
       }
     }
@@ -92,7 +110,7 @@ async function pingProvider(
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: config.model,
+        model: model,
         messages: [{ role: 'user', content: 'ping' }],
         max_tokens: 5,
       }),
@@ -102,11 +120,14 @@ async function pingProvider(
 
     if (res.ok) {
       return { success: true, latency }
+    } else if (res.status === 404) {
+      return { success: false, latency, message: 'Model not found' }
     } else if (res.status === 401) {
       return { success: false, latency, message: 'Invalid API key' }
     } else if (res.status === 429) {
       return { success: false, latency, message: 'Rate limited' }
     } else {
+      const errorText = await res.text().catch(() => '')
       return { success: false, latency, message: `HTTP ${res.status}` }
     }
   } catch (error) {
@@ -118,11 +139,18 @@ async function pingProvider(
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { provider, apiKey } = body as { provider: string; apiKey: string }
+    const { provider, model, apiKey } = body as PingRequest
 
     if (!provider) {
       return NextResponse.json(
         { success: false, message: 'Provider not specified' },
+        { status: 400 }
+      )
+    }
+
+    if (!model) {
+      return NextResponse.json(
+        { success: false, message: 'Model not specified' },
         { status: 400 }
       )
     }
@@ -134,7 +162,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const result = await pingProvider(provider, apiKey)
+    const result = await pingModel(provider, model, apiKey)
     return NextResponse.json(result)
   } catch (error) {
     return NextResponse.json(
