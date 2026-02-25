@@ -1,10 +1,15 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef, memo } from 'react'
 import { MODELS, providers } from '@modelsfree/providers'
 import { TIER_ORDER_CONST } from '@modelsfree/core'
 import type { Tier, ProviderKey } from '@modelsfree/types'
-import { Search, Filter, X, ChevronDown, SlidersHorizontal, Activity, Pause, Play, Check, AlertCircle, RefreshCw } from 'lucide-react'
+import { Search, Filter, X, ChevronDown, SlidersHorizontal, Activity, Pause, Play, Check, AlertCircle, RefreshCw, Terminal, Copy, Download, ExternalLink } from 'lucide-react'
+import { 
+  isOpenCodeSupported, 
+  generateOpenCodeInstructions, 
+  generateOpenCodeConfig
+} from '@/lib/opencode'
 
 // Model ping status type
 interface ModelPingStatus {
@@ -14,8 +19,15 @@ interface ModelPingStatus {
   lastChecked?: number
 }
 
+// Static filter options - defined outside component to prevent Fast Refresh issues
+const TIER_OPTIONS = TIER_ORDER_CONST.map(tier => ({ value: tier, label: tier }))
+const PROVIDER_OPTIONS = Object.keys(providers).map(key => ({
+  value: key as ProviderKey,
+  label: providers[key as ProviderKey].name
+}))
+
 // Tier Badge Component
-function TierBadge({ tier }: { tier: Tier }) {
+const TierBadge = memo(function TierBadge({ tier }: { tier: Tier }) {
   const colors: Record<Tier, string> = {
     'S+': 'bg-tier-s-plus/20 text-tier-s-plus border-tier-s-plus/30',
     'S': 'bg-tier-s/20 text-tier-s border-tier-s/30',
@@ -35,10 +47,10 @@ function TierBadge({ tier }: { tier: Tier }) {
       {tier}
     </span>
   )
-}
+})
 
 // Filter Button Component
-function FilterButton({ 
+const FilterButton = memo(function FilterButton({ 
   active, 
   onClick, 
   children 
@@ -59,10 +71,10 @@ function FilterButton({
       {children}
     </button>
   )
-}
+})
 
-// Dropdown Filter Component
-function DropdownFilter<T extends string>({
+// Dropdown Filter Component - using a simpler non-generic approach for Fast Refresh compatibility
+const DropdownFilter = memo(function DropdownFilter({
   label,
   options,
   value,
@@ -70,9 +82,9 @@ function DropdownFilter<T extends string>({
   allLabel = 'All'
 }: {
   label: string
-  options: { value: T; label: string }[]
-  value: T | null
-  onChange: (value: T | null) => void
+  options: { value: string; label: string }[]
+  value: string | null
+  onChange: (value: string | null) => void
   allLabel?: string
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -127,17 +139,20 @@ function DropdownFilter<T extends string>({
       )}
     </div>
   )
-}
+})
 
 // Model Card for mobile
 function ModelCard({ 
   model, 
-  pingStatus 
+  pingStatus,
+  onOpenCode
 }: { 
   model: typeof MODELS[0]
   pingStatus?: ModelPingStatus
+  onOpenCode: () => void
 }) {
   const [modelId, label, tier, sweScore, ctx, providerKey] = model
+  const isSupported = isOpenCodeSupported(providerKey as ProviderKey, modelId)
   
   return (
     <div className="rounded-lg border bg-card p-3 hover:bg-muted/30 transition-colors">
@@ -160,12 +175,26 @@ function ModelCard({
         <span>•</span>
         <span className="truncate">{providers[providerKey as ProviderKey]?.name || providerKey}</span>
       </div>
+      <div className="mt-2">
+        <button
+          onClick={onOpenCode}
+          disabled={!isSupported}
+          className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
+            isSupported 
+              ? 'bg-primary/10 text-primary hover:bg-primary/20' 
+              : 'bg-muted text-muted-foreground cursor-not-allowed'
+          }`}
+        >
+          <Terminal className="h-3 w-3" />
+          Use in OpenCode
+        </button>
+      </div>
     </div>
   )
 }
 
 // Status Indicator Component
-function StatusIndicator({ status }: { status: ModelPingStatus }) {
+const StatusIndicator = memo(function StatusIndicator({ status }: { status: ModelPingStatus }) {
   if (status.status === 'pending') {
     return <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
   }
@@ -185,6 +214,143 @@ function StatusIndicator({ status }: { status: ModelPingStatus }) {
     )
   }
   return null
+})
+
+// OpenCode Modal Component
+function OpenCodeModal({
+  isOpen,
+  onClose,
+  modelId,
+  modelName,
+  providerKey,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  modelId: string
+  modelName: string
+  providerKey: ProviderKey
+}) {
+  const [copied, setCopied] = useState(false)
+  const [apiKey, setApiKey] = useState<string | null>(null)
+  
+  // Get API key from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const envVarName = providers[providerKey]?.envVarName
+      if (envVarName) {
+        setApiKey(localStorage.getItem(envVarName))
+      }
+    }
+  }, [providerKey])
+  
+  const instructions = useMemo(() => 
+    generateOpenCodeInstructions(providerKey, modelId, modelName),
+    [providerKey, modelId, modelName]
+  )
+  
+  const config = useMemo(() => {
+    if (!apiKey) return null
+    return generateOpenCodeConfig(providerKey, modelId, apiKey)
+  }, [providerKey, modelId, apiKey])
+  
+  const handleCopy = async () => {
+    if (!config) return
+    await navigator.clipboard.writeText(JSON.stringify(config, null, 2))
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+  
+  const handleDownload = () => {
+    if (!config) return
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '.opencode.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+  
+  if (!isOpen) return null
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center gap-2">
+            <Terminal className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Use in OpenCode CLI</h2>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="p-4 overflow-y-auto max-h-[calc(80vh-120px)]">
+          {!instructions.supported ? (
+            <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+              <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                {instructions.instructions}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="text-sm font-medium">Model: {modelName}</p>
+                <p className="text-xs text-muted-foreground">OpenCode ID: {instructions.modelId}</p>
+                <p className="text-xs text-muted-foreground">Provider: {instructions.provider}</p>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Setup Instructions:</h3>
+                <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap">
+                  {instructions.instructions}
+                </pre>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium">Config File (~/.opencode.json):</h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCopy}
+                      className="flex items-center gap-1 px-2 py-1 text-xs bg-muted hover:bg-muted/80 rounded"
+                    >
+                      <Copy className="h-3 w-3" />
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                    <button
+                      onClick={handleDownload}
+                      className="flex items-center gap-1 px-2 py-1 text-xs bg-primary text-primary-foreground hover:bg-primary/90 rounded"
+                    >
+                      <Download className="h-3 w-3" />
+                      Download
+                    </button>
+                  </div>
+                </div>
+                <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto">
+                  {config ? JSON.stringify(config, null, 2) : 'Unable to generate config'}
+                </pre>
+              </div>
+              
+              <div className="flex items-center gap-2 pt-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <a 
+                  href="https://github.com/opencode-ai/opencode" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  OpenCode Documentation
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function ExplorerPage() {
@@ -194,21 +360,22 @@ export default function ExplorerPage() {
   const [selectedProvider, setSelectedProvider] = useState<ProviderKey | null>(null)
   const [sortBy, setSortBy] = useState<'name' | 'tier' | 'swe' | 'ctx'>('tier')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  
+  // OpenCode modal state
+  const [openCodeModal, setOpenCodeModal] = useState<{
+    isOpen: boolean
+    modelId: string
+    modelName: string
+    providerKey: ProviderKey
+  }>({ isOpen: false, modelId: '', modelName: '', providerKey: 'groq' })
   const [showFilters, setShowFilters] = useState(false)
   
   // Model ping monitoring state
   const [liveMonitoring, setLiveMonitoring] = useState(false)
   const [pingStatuses, setPingStatuses] = useState<Record<string, ModelPingStatus>>({})
-  const [currentIndex, setCurrentIndex] = useState(0)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const pingAbortControllerRef = useRef<AbortController | null>(null)
   const MONITORING_INTERVAL = 30 // Fixed 30 seconds interval
-  
-  // Filter options
-  const tierOptions = TIER_ORDER_CONST.map(tier => ({ value: tier, label: tier }))
-  const providerOptions = Object.keys(providers).map(key => ({
-    value: key as ProviderKey,
-    label: providers[key as ProviderKey].name
-  }))
   
   // Filtered and sorted models
   const filteredModels = useMemo(() => {
@@ -281,7 +448,7 @@ export default function ExplorerPage() {
   }, [])
   
   // Ping a single model
-  const pingModel = useCallback(async (modelId: string, providerKey: string) => {
+  const pingModel = useCallback(async (modelId: string, providerKey: string, signal?: AbortSignal) => {
     const key = `${providerKey}-${modelId}`
     
     // Set pending status
@@ -308,7 +475,14 @@ export default function ExplorerPage() {
           model: modelId, 
           apiKey 
         }),
+        signal,
       })
+      
+      // Check if request was aborted
+      if (signal?.aborted) {
+        return
+      }
+      
       const data = await res.json()
       
       setPingStatuses(prev => ({
@@ -320,7 +494,11 @@ export default function ExplorerPage() {
           lastChecked: Date.now()
         }
       }))
-    } catch {
+    } catch (error) {
+      // Don't update status if request was aborted
+      if (error instanceof Error && error.name === 'AbortError') {
+        return
+      }
       setPingStatuses(prev => ({
         ...prev,
         [key]: { status: 'error', message: 'Network error' }
@@ -330,42 +508,65 @@ export default function ExplorerPage() {
   
   // Live monitoring effect - ping all models simultaneously
   useEffect(() => {
-    if (liveMonitoring && filteredModels.length > 0) {
-      // Ping all models simultaneously
-      const pingAllSimultaneously = async () => {
+    let isCancelled = false
+    
+    const runMonitoring = async () => {
+      while (liveMonitoring && !isCancelled && filteredModels.length > 0) {
+        // Create new AbortController for this ping batch
+        const controller = new AbortController()
+        pingAbortControllerRef.current = controller
+        const signal = controller.signal
+        
+        // Ping all models simultaneously
         const promises = filteredModels.map(([modelId, , , , , providerKey]) => 
-          pingModel(modelId, providerKey)
+          pingModel(modelId, providerKey, signal)
         )
-        await Promise.all(promises)
-      }
-      
-      pingAllSimultaneously()
-      
-      // Schedule next batch
-      intervalRef.current = setTimeout(() => {
-        // Force re-render to trigger next batch
-        setCurrentIndex((prev) => prev + 1)
-      }, MONITORING_INTERVAL * 1000)
-    } else {
-      if (intervalRef.current) {
-        clearTimeout(intervalRef.current)
-        intervalRef.current = null
+        
+        // Wait for all pings to complete or be aborted
+        await Promise.allSettled(promises)
+        
+        // Wait for the interval before next batch (unless cancelled)
+        if (!isCancelled && liveMonitoring) {
+          await new Promise<void>(resolve => {
+            intervalRef.current = setTimeout(() => {
+              resolve()
+            }, MONITORING_INTERVAL * 1000)
+          })
+        }
       }
     }
     
+    if (liveMonitoring && filteredModels.length > 0) {
+      runMonitoring()
+    }
+    
     return () => {
+      isCancelled = true
+      // Abort all pending requests when stopping
+      if (pingAbortControllerRef.current) {
+        pingAbortControllerRef.current.abort()
+        pingAbortControllerRef.current = null
+      }
       if (intervalRef.current) {
         clearTimeout(intervalRef.current)
         intervalRef.current = null
       }
     }
-  }, [liveMonitoring, filteredModels, pingModel, currentIndex])
+  }, [liveMonitoring, filteredModels, pingModel])
   
   const toggleLiveMonitoring = () => {
     if (liveMonitoring) {
+      // Abort all pending requests when stopping
+      if (pingAbortControllerRef.current) {
+        pingAbortControllerRef.current.abort()
+        pingAbortControllerRef.current = null
+      }
+      if (intervalRef.current) {
+        clearTimeout(intervalRef.current)
+        intervalRef.current = null
+      }
       setLiveMonitoring(false)
     } else {
-      setCurrentIndex(0)
       setLiveMonitoring(true)
     }
   }
@@ -435,16 +636,16 @@ export default function ExplorerPage() {
             
             <DropdownFilter
               label="Tier"
-              options={tierOptions}
+              options={TIER_OPTIONS}
               value={selectedTier}
-              onChange={setSelectedTier}
+              onChange={(value) => setSelectedTier(value as Tier | null)}
             />
             
             <DropdownFilter
               label="Provider"
-              options={providerOptions}
+              options={PROVIDER_OPTIONS}
               value={selectedProvider}
-              onChange={setSelectedProvider}
+              onChange={(value) => setSelectedProvider(value as ProviderKey | null)}
             />
             
             {hasActiveFilters && (
@@ -525,13 +726,19 @@ export default function ExplorerPage() {
       
       {/* Models Grid - Mobile */}
       <div className="md:hidden space-y-2">
-        {filteredModels.map(([modelId, , , , , providerKey]) => {
+        {filteredModels.map(([modelId, label, , , , providerKey]) => {
           const key = `${providerKey}-${modelId}`
           return (
             <ModelCard 
               key={key} 
               model={MODELS.find(m => m[0] === modelId && m[5] === providerKey)!} 
               pingStatus={pingStatuses[key]}
+              onOpenCode={() => setOpenCodeModal({
+                isOpen: true,
+                modelId,
+                modelName: label,
+                providerKey: providerKey as ProviderKey
+              })}
             />
           )
         })}
@@ -554,12 +761,14 @@ export default function ExplorerPage() {
                 <th className="text-left p-3 text-sm font-medium">Context</th>
                 <th className="text-left p-3 text-sm font-medium">Provider</th>
                 <th className="text-left p-3 text-sm font-medium">Status</th>
+                <th className="text-left p-3 text-sm font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredModels.map(([modelId, label, tier, sweScore, ctx, providerKey]) => {
                 const key = `${providerKey}-${modelId}`
                 const status = pingStatuses[key]
+                const isSupported = isOpenCodeSupported(providerKey as ProviderKey, modelId)
                 return (
                   <tr 
                     key={key} 
@@ -584,6 +793,26 @@ export default function ExplorerPage() {
                         <StatusIndicator status={status} />
                       )}
                     </td>
+                    <td className="p-3">
+                      <button
+                        onClick={() => setOpenCodeModal({
+                          isOpen: true,
+                          modelId,
+                          modelName: label,
+                          providerKey: providerKey as ProviderKey
+                        })}
+                        disabled={!isSupported}
+                        className={`flex items-center gap-1 px-2 py-1 text-xs rounded transition-colors ${
+                          isSupported 
+                            ? 'bg-primary/10 text-primary hover:bg-primary/20' 
+                            : 'bg-muted text-muted-foreground cursor-not-allowed'
+                        }`}
+                        title={isSupported ? 'Use in OpenCode CLI' : 'Not supported in OpenCode'}
+                      >
+                        <Terminal className="h-3 w-3" />
+                        OpenCode
+                      </button>
+                    </td>
                   </tr>
                 )
               })}
@@ -597,6 +826,15 @@ export default function ExplorerPage() {
           </div>
         )}
       </div>
+      
+      {/* OpenCode Modal */}
+      <OpenCodeModal
+        isOpen={openCodeModal.isOpen}
+        onClose={() => setOpenCodeModal(prev => ({ ...prev, isOpen: false }))}
+        modelId={openCodeModal.modelId}
+        modelName={openCodeModal.modelName}
+        providerKey={openCodeModal.providerKey}
+      />
     </div>
   )
 }

@@ -355,8 +355,8 @@ export default function SettingsPage() {
   
   // Live monitoring state
   const [liveMonitoring, setLiveMonitoring] = useState(false)
-  const [monitoringInterval, setMonitoringInterval] = useState(5) // seconds
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const MONITORING_INTERVAL = 30 // Fixed 30 seconds interval
 
   // Load keys from localStorage on mount
   useEffect(() => {
@@ -482,7 +482,7 @@ export default function SettingsPage() {
       // Run immediately
       handlePing()
       // Then run at interval
-      intervalRef.current = setInterval(handlePing, monitoringInterval * 1000)
+      intervalRef.current = setInterval(handlePing, MONITORING_INTERVAL * 1000)
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
@@ -496,7 +496,7 @@ export default function SettingsPage() {
         intervalRef.current = null
       }
     }
-  }, [liveMonitoring, monitoringInterval, handlePing])
+  }, [liveMonitoring, handlePing])
 
   const toggleLiveMonitoring = () => {
     if (liveMonitoring) {
@@ -658,31 +658,13 @@ export default function SettingsPage() {
               </>
             )}
           </button>
-
-          {/* Interval Selector */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Interval:</label>
-            <select
-              value={monitoringInterval}
-              onChange={(e) => setMonitoringInterval(Number(e.target.value))}
-              disabled={liveMonitoring}
-              className="px-2 py-1.5 text-sm border rounded-md bg-background disabled:opacity-50"
-            >
-              <option value={1}>1s</option>
-              <option value={2}>2s</option>
-              <option value={5}>5s</option>
-              <option value={10}>10s</option>
-              <option value={30}>30s</option>
-              <option value={60}>60s</option>
-            </select>
-          </div>
         </div>
 
         {/* Live Status Indicator */}
         {liveMonitoring && (
           <div className="flex items-center gap-2 text-sm text-green-500">
             <Activity className="h-4 w-4 animate-pulse" />
-            <span>Live monitoring active - pinging every {monitoringInterval}s</span>
+            <span>Live monitoring active - pinging every {MONITORING_INTERVAL}s</span>
           </div>
         )}
       </div>
