@@ -14,17 +14,24 @@
 import type { ProviderKey } from '@modelsfree/types'
 
 // OpenCode provider names
-export type OpenCodeProvider = 
-  | 'anthropic' 
-  | 'openai' 
-  | 'gemini' 
-  | 'groq' 
-  | 'openrouter' 
-  | 'azure' 
-  | 'bedrock' 
+export type OpenCodeProvider =
+  | 'anthropic'
+  | 'openai'
+  | 'gemini'
+  | 'groq'
+  | 'openrouter'
+  | 'azure'
+  | 'bedrock'
   | 'vertexai'
   | 'copilot'
   | 'nvidia' // Via LOCAL_ENDPOINT
+  | 'cerebras' // Via LOCAL_ENDPOINT
+  | 'sambanova' // Via LOCAL_ENDPOINT
+  | 'codestral' // Via LOCAL_ENDPOINT
+  | 'mistral' // Via LOCAL_ENDPOINT
+  | 'fireworks' // Via LOCAL_ENDPOINT
+  | 'hyperbolic' // Via LOCAL_ENDPOINT
+  | 'scaleway' // Via LOCAL_ENDPOINT
 
 // OpenCode model ID mapping
 // Maps ModelsFree (provider, modelId) to OpenCode model ID
@@ -129,6 +136,13 @@ export const OPENCODE_ENV_VAR_MAP: Record<OpenCodeProvider, string> = {
   vertexai: 'GOOGLE_APPLICATION_CREDENTIALS',
   copilot: 'GITHUB_TOKEN',
   nvidia: 'NVIDIA_API_KEY',
+  cerebras: 'CEREBRAS_API_KEY',
+  sambanova: 'SAMBANOVA_API_KEY',
+  codestral: 'CODESTRAL_API_KEY',
+  mistral: 'MISTRAL_API_KEY',
+  fireworks: 'FIREWORKS_API_KEY',
+  hyperbolic: 'HYPERBOLIC_API_KEY',
+  scaleway: 'SCALEWAY_API_KEY',
 }
 
 // ModelsFree provider to OpenCode provider mapping
@@ -137,6 +151,13 @@ export const MODELSFREE_TO_OPENCODE_PROVIDER: Partial<Record<ProviderKey, OpenCo
   openrouter: 'openrouter',
   googleai: 'gemini',
   nvidia: 'nvidia', // NVIDIA NIM via LOCAL_ENDPOINT
+  cerebras: 'cerebras', // Cerebras via LOCAL_ENDPOINT
+  sambanova: 'sambanova', // SambaNova via LOCAL_ENDPOINT
+  codestral: 'codestral', // Codestral via LOCAL_ENDPOINT
+  mistral: 'mistral', // Mistral AI via LOCAL_ENDPOINT
+  fireworks: 'fireworks', // Fireworks AI via LOCAL_ENDPOINT
+  hyperbolic: 'hyperbolic', // Hyperbolic via LOCAL_ENDPOINT
+  scaleway: 'scaleway', // Scaleway via LOCAL_ENDPOINT
 }
 
 /**
@@ -179,6 +200,41 @@ export function getOpenCodeModelId(providerKey: ProviderKey, modelId: string): s
   
   // For NVIDIA NIM, use model ID directly (works with LOCAL_ENDPOINT)
   if (providerKey === 'nvidia') {
+    return modelId
+  }
+  
+  // For Cerebras, use model ID directly (works with LOCAL_ENDPOINT)
+  if (providerKey === 'cerebras') {
+    return modelId
+  }
+  
+  // For SambaNova, use model ID directly (works with LOCAL_ENDPOINT)
+  if (providerKey === 'sambanova') {
+    return modelId
+  }
+  
+  // For Codestral, use model ID directly (works with LOCAL_ENDPOINT)
+  if (providerKey === 'codestral') {
+    return modelId
+  }
+  
+  // For Mistral AI, use model ID directly (works with LOCAL_ENDPOINT)
+  if (providerKey === 'mistral') {
+    return modelId
+  }
+  
+  // For Fireworks AI, use model ID directly (works with LOCAL_ENDPOINT)
+  if (providerKey === 'fireworks') {
+    return modelId
+  }
+  
+  // For Hyperbolic, use model ID directly (works with LOCAL_ENDPOINT)
+  if (providerKey === 'hyperbolic') {
+    return modelId
+  }
+  
+  // For Scaleway, use model ID directly (works with LOCAL_ENDPOINT)
+  if (providerKey === 'scaleway') {
     return modelId
   }
   
@@ -235,8 +291,8 @@ export function generateOpenCodeConfig(
     return null
   }
   
-  // NVIDIA NIM uses LOCAL_ENDPOINT with OpenAI-compatible API
-  if (openCodeProvider === 'nvidia') {
+  // Providers that use LOCAL_ENDPOINT with OpenAI-compatible API
+  if (['nvidia', 'cerebras', 'sambanova', 'codestral', 'mistral', 'fireworks', 'hyperbolic', 'scaleway'].includes(openCodeProvider)) {
     return {
       providers: {
         openai: {
@@ -315,25 +371,40 @@ export function generateOpenCodeInstructions(
   
   const envVar = OPENCODE_ENV_VAR_MAP[openCodeProvider]
   
-  // Special instructions for NVIDIA NIM (uses LOCAL_ENDPOINT)
-  if (openCodeProvider === 'nvidia') {
+  // Provider endpoint mapping for LOCAL_ENDPOINT
+  const providerEndpoints: Record<string, string> = {
+    nvidia: 'https://integrate.api.nvidia.com/v1',
+    cerebras: 'https://api.cerebras.ai/v1',
+    sambanova: 'https://api.sambanova.ai/v1',
+    codestral: 'https://codestral.mistral.ai/v1',
+    mistral: 'https://api.mistral.ai/v1',
+    fireworks: 'https://api.fireworks.ai/inference/v1',
+    hyperbolic: 'https://api.hyperbolic.xyz/v1',
+    scaleway: 'https://api.scaleway.ai/v1',
+  }
+  
+  // Special instructions for providers that use LOCAL_ENDPOINT
+  if (openCodeProvider in providerEndpoints) {
+    const endpoint = providerEndpoints[openCodeProvider]
+    const providerName = openCodeProvider.charAt(0).toUpperCase() + openCodeProvider.slice(1)
+    
     return {
       supported: true,
       modelId: openCodeModelId,
       provider: openCodeProvider,
-      instructions: `To use "${modelName}" (NVIDIA NIM) in OpenCode CLI:
+      instructions: `To use "${modelName}" (${providerName}) in OpenCode CLI:
 
-1. Set your NVIDIA API key:
-   export NVIDIA_API_KEY="nvapi-xxx"
+1. Set your ${providerName} API key:
+   export ${envVar}="your-api-key"
 
-2. Set the LOCAL_ENDPOINT to NVIDIA's OpenAI-compatible API:
-   export LOCAL_ENDPOINT="https://integrate.api.nvidia.com/v1"
+2. Set the LOCAL_ENDPOINT to ${providerName}'s OpenAI-compatible API:
+   export LOCAL_ENDPOINT="${endpoint}"
 
 3. Create or update ~/.opencode.json with:
    {
      "providers": {
        "openai": {
-         "apiKey": "$NVIDIA_API_KEY"
+         "apiKey": "$${envVar}"
        }
      },
      "agents": {
@@ -345,9 +416,9 @@ export function generateOpenCodeInstructions(
    }
 
 4. Run OpenCode:
-   LOCAL_ENDPOINT=https://integrate.api.nvidia.com/v1 opencode
+   LOCAL_ENDPOINT=${endpoint} opencode
 
-Note: NVIDIA NIM uses an OpenAI-compatible API, so it works via the LOCAL_ENDPOINT setting.
+Note: ${providerName} uses an OpenAI-compatible API, so it works via the LOCAL_ENDPOINT setting.
 `,
     }
   }
@@ -405,18 +476,33 @@ export function generateLaunchScript(
   
   const configJson = JSON.stringify(config, null, 2)
   
+  // Provider endpoint mapping for LOCAL_ENDPOINT
+  const providerEndpoints: Record<string, string> = {
+    nvidia: 'https://integrate.api.nvidia.com/v1',
+    cerebras: 'https://api.cerebras.ai/v1',
+    sambanova: 'https://api.sambanova.ai/v1',
+    codestral: 'https://codestral.mistral.ai/v1',
+    mistral: 'https://api.mistral.ai/v1',
+    fireworks: 'https://api.fireworks.ai/inference/v1',
+    hyperbolic: 'https://api.hyperbolic.xyz/v1',
+    scaleway: 'https://api.scaleway.ai/v1',
+  }
+  
   if (isWindows) {
     // Windows batch script
-    if (openCodeProvider === 'nvidia') {
+    if (openCodeProvider in providerEndpoints) {
+      const endpoint = providerEndpoints[openCodeProvider]
+      const envVar = OPENCODE_ENV_VAR_MAP[openCodeProvider]
+      
       return `@echo off
 REM OpenCode launcher for ${modelId}
 REM Generated by ModelsFree Dashboard
 
 SETLOCAL
 
-REM Set NVIDIA API endpoint
-SET LOCAL_ENDPOINT=https://integrate.api.nvidia.com/v1
-SET NVIDIA_API_KEY=${apiKey}
+REM Set API endpoint
+SET LOCAL_ENDPOINT=${endpoint}
+SET ${envVar}=${apiKey}
 
 REM Create config directory
 IF NOT EXIST "%USERPROFILE%" mkdir "%USERPROFILE%"
@@ -450,13 +536,16 @@ ENDLOCAL
   }
   
   // Unix shell script
-  if (openCodeProvider === 'nvidia') {
+  if (openCodeProvider in providerEndpoints) {
+    const endpoint = providerEndpoints[openCodeProvider]
+    const envVar = OPENCODE_ENV_VAR_MAP[openCodeProvider]
+    
     return `#!/bin/bash
 # OpenCode launcher for ${modelId}
 # Generated by ModelsFree Dashboard
 
-export LOCAL_ENDPOINT="https://integrate.api.nvidia.com/v1"
-export NVIDIA_API_KEY="${apiKey}"
+export LOCAL_ENDPOINT="${endpoint}"
+export ${envVar}="${apiKey}"
 
 # Write config file
 cat > ~/.opencode.json << 'EOF'
