@@ -56,7 +56,6 @@ graph TD
 | **Groq** | 11 | Ultra-low latency | [Get Groq Key](https://console.groq.com/keys) |
 | **OpenRouter** | 26 | Universal model access | [Get OR Key](https://openrouter.ai/keys) |
 | **Google AI** | 6 | Gemini & Gemma ecosystem | [Get AI Studio Key](https://aistudio.google.com/apikey) |
-| **SambaNova** | 12 | Large model trial credits | [Get SambaNova Key](https://cloud.sambanova.ai) |
 | **Cerebras** | 4 | Real-time performance | [Get Cerebras Key](https://cloud.cerebras.ai) |
 | **Mistral AI** | 8 | Native Mistral models | [Get Mistral Key](https://console.mistral.ai) |
 | **Scaleway** | 6 | European cloud hosting | [Get Scaleway Key](https://console.scaleway.com) |
@@ -102,7 +101,6 @@ NVIDIA_API_KEY=your_key
 OPENROUTER_API_KEY=your_key
 GROQ_API_KEY=your_key
 CEREBRAS_API_KEY=your_key
-SAMBANOVA_API_KEY=your_key
 CODESTRAL_API_KEY=your_key
 GOOGLE_API_KEY=your_key
 MISTRAL_API_KEY=your_key
