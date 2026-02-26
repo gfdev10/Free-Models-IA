@@ -30,6 +30,7 @@ Your API keys never leave your browser. All configuration is stored locally in y
 
 ModelsFree is built using a modern **Turborepo/pnpm monorepo** structure, ensuring strict type safety and modularity.
 
+```mermaid
 graph TD
     App[apps/dashboard] --> Core[@modelsfree/core]
     App --> Providers[@modelsfree/providers]
@@ -37,6 +38,7 @@ graph TD
     Providers --> Core
     Providers --> Types
     Core --> Types
+```
 
 ### 📦 Modular Breakdown
 - **`@modelsfree/types`**: Single source of truth for Zod schemas and TypeScript interfaces.
