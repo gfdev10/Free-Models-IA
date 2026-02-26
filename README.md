@@ -32,9 +32,9 @@ ModelsFree is built using a modern **Turborepo/pnpm monorepo** structure, ensuri
 
 ```mermaid
 graph TD
-    App[apps/dashboard] --> Core[@modelsfree/core]
-    App --> Providers[@modelsfree/providers]
-    App --> Types[@modelsfree/types]
+    App["apps/dashboard"] --> Core["@modelsfree/core"]
+    App --> Providers["@modelsfree/providers"]
+    App --> Types["@modelsfree/types"]
     Providers --> Core
     Providers --> Types
     Core --> Types
