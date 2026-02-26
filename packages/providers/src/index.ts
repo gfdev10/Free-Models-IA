@@ -92,22 +92,6 @@ export const providers: Record<ProviderKey, ProviderConfig> = {
     keyPrefix: '',
     hint: 'La Plateforme → API Keys (free tier available)',
   },
-  fireworks: {
-    key: 'fireworks',
-    name: 'Fireworks AI',
-    url: 'https://api.fireworks.ai/inference/v1/chat/completions',
-    envVarName: 'FIREWORKS_API_KEY',
-    keyPrefix: 'fw_',
-    hint: '$6 free credit on signup, then pay-per-use',
-  },
-  hyperbolic: {
-    key: 'hyperbolic',
-    name: 'Hyperbolic',
-    url: 'https://api.hyperbolic.xyz/v1/chat/completions',
-    envVarName: 'HYPERBOLIC_API_KEY',
-    keyPrefix: 'sk_live_',
-    hint: '$1 free credit on signup, then pay-per-use',
-  },
   scaleway: {
     key: 'scaleway',
     name: 'Scaleway',
@@ -295,45 +279,7 @@ export const mistralModels: ModelTuple[] = [
   ['ministral-8b-latest', 'Ministral 8B', 'B', '25.0%', '128k'],
 ]
 
-/**
- * Fireworks AI models - https://fireworks.ai
- * $6 free credit on signup, then pay-per-use
- */
-export const fireworksModels: ModelTuple[] = [
-  // S tier - High performance models
-  ['accounts/fireworks/models/glm-5', 'GLM 5', 'S+', '77.8%', '200k'],
-  ['accounts/fireworks/models/deepseek-v3p2', 'DeepSeek V3.2', 'S+', '73.1%', '163k'],
-  ['accounts/fireworks/models/kimi-k2-instruct-0905', 'Kimi K2 Instruct', 'S', '65.8%', '262k'],
-  // A tier - Good performance
-  ['accounts/fireworks/models/minimax-m2p1', 'MiniMax M2.1', 'A+', '58.0%', '204k'],
-  ['accounts/fireworks/models/gpt-oss-120b', 'GPT OSS 120B', 'S', '60.0%', '131k'],
-  ['accounts/fireworks/models/gpt-oss-20b', 'GPT OSS 20B', 'A', '42.0%', '131k'],
-  // B tier - Coding focused
-  ['accounts/fireworks/models/mixtral-8x22b-instruct', 'Mixtral 8x22B', 'B+', '32.0%', '65k'],
-]
 
-/**
- * Hyperbolic models - https://hyperbolic.xyz
- * $1 free credit on signup, then pay-per-use
- */
-export const hyperbolicModels: ModelTuple[] = [
-  // S+ tier - Elite models
-  ['Qwen/Qwen3-Coder-480B-A35B-Instruct', 'Qwen3 Coder 480B', 'S+', '70.6%', '262k'],
-  ['deepseek-ai/DeepSeek-R1', 'DeepSeek R1', 'S+', '72.0%', '163k'],
-  // S tier - High performance
-  ['Qwen/Qwen2.5-72B-Instruct', 'Qwen2.5 72B', 'S', '65.0%', '131k'],
-  ['deepseek-ai/DeepSeek-V3', 'DeepSeek V3', 'S', '62.0%', '131k'],
-  ['meta-llama/Llama-3.3-70B-Instruct', 'Llama 3.3 70B', 'A-', '39.5%', '131k'],
-  ['openai/gpt-oss-120b', 'GPT OSS 120B', 'S', '60.0%', '131k'],
-  // A tier - Good performance
-  ['Qwen/Qwen3-235B-A22B', 'Qwen3 235B', 'S+', '70.0%', '40k'],
-  ['Qwen/Qwen3-Next-80B-A3B-Instruct', 'Qwen3 80B Instruct', 'S', '65.0%', '262k'],
-  ['Qwen/Qwen2.5-Coder-32B-Instruct', 'Qwen2.5 Coder 32B', 'A', '46.0%', '32k'],
-  ['Qwen/QwQ-32B', 'QwQ 32B', 'A+', '50.0%', '131k'],
-  ['meta-llama/Meta-Llama-3.1-70B-Instruct', 'Llama 3.1 70B', 'A-', '39.5%', '131k'],
-  ['meta-llama/Meta-Llama-3.1-8B-Instruct', 'Llama 3.1 8B', 'B', '28.8%', '131k'],
-  ['meta-llama/Llama-3.2-3B-Instruct', 'Llama 3.2 3B', 'B-', '20.0%', '131k'],
-]
 
 /**
  * Scaleway models - https://scaleway.ai
@@ -398,16 +344,6 @@ export const sources: Record<ProviderKey, { name: string; url: string; models: M
     name: providers.mistral.name,
     url: providers.mistral.url,
     models: mistralModels,
-  },
-  fireworks: {
-    name: providers.fireworks.name,
-    url: providers.fireworks.url,
-    models: fireworksModels,
-  },
-  hyperbolic: {
-    name: providers.hyperbolic.name,
-    url: providers.hyperbolic.url,
-    models: hyperbolicModels,
   },
   scaleway: {
     name: providers.scaleway.name,

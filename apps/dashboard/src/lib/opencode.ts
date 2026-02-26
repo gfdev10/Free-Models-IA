@@ -29,8 +29,6 @@ export type OpenCodeProvider =
   | 'sambanova' // Via LOCAL_ENDPOINT
   | 'codestral' // Via LOCAL_ENDPOINT
   | 'mistral' // Via LOCAL_ENDPOINT
-  | 'fireworks' // Via LOCAL_ENDPOINT
-  | 'hyperbolic' // Via LOCAL_ENDPOINT
   | 'scaleway' // Via LOCAL_ENDPOINT
 
 // OpenCode model ID mapping
@@ -42,7 +40,7 @@ export const OPENCODE_MODEL_MAP: Record<string, OpenCodeProvider> = {
   'groq:meta-llama/llama-4-scout-17b-16e-instruct': 'groq',
   'groq:meta-llama/llama-4-maverick-17b-128e-instruct': 'groq',
   'groq:deepseek-r1-distill-llama-70b': 'groq',
-  
+
   // OpenRouter models (prefix: openrouter.)
   'openrouter:openai/gpt-4.1': 'openrouter',
   'openrouter:openai/gpt-4.1-mini': 'openrouter',
@@ -52,12 +50,12 @@ export const OPENCODE_MODEL_MAP: Record<string, OpenCodeProvider> = {
   'openrouter:anthropic/claude-3.7-sonnet': 'openrouter',
   'openrouter:google/gemini-2.5-flash-preview:thinking': 'openrouter',
   'openrouter:deepseek/deepseek-r1-0528:free': 'openrouter',
-  
+
   // Google AI models
   'googleai:gemini-2.5-pro-preview-03-25': 'gemini',
   'googleai:gemini-2.5-flash-preview-04-17': 'gemini',
   'googleai:gemini-2.0-flash': 'gemini',
-  
+
   // NVIDIA NIM (via LOCAL_ENDPOINT - OpenAI-compatible)
   'nvidia:meta/llama-3.1-405b-instruct': 'nvidia',
   'nvidia:meta/llama-3.1-70b-instruct': 'nvidia',
@@ -74,10 +72,10 @@ export const OPENCODE_MODEL_MAP: Record<string, OpenCodeProvider> = {
   'nvidia:google/gemma-2-2b-it': 'nvidia',
   'nvidia:google/gemma-2-9b-it': 'nvidia',
   'nvidia:google/gemma-2-27b-it': 'nvidia',
-  
+
   // Cerebras (not directly supported, suggest OpenRouter)
   'cerebras:llama-3.3-70b': 'openrouter',
-  
+
   // SambaNova (not directly supported, suggest OpenRouter)
   'sambanova:Meta-Llama-3.3-70B-Instruct': 'openrouter',
 }
@@ -90,7 +88,7 @@ export const OPENCODE_MODEL_ID_MAP: Record<string, string> = {
   'groq:meta-llama/llama-4-scout-17b-16e-instruct': 'meta-llama/llama-4-scout-17b-16e-instruct',
   'groq:meta-llama/llama-4-maverick-17b-128e-instruct': 'meta-llama/llama-4-maverick-17b-128e-instruct',
   'groq:deepseek-r1-distill-llama-70b': 'deepseek-r1-distill-llama-70b',
-  
+
   // OpenRouter (prefix with openrouter.)
   'openrouter:openai/gpt-4.1': 'openrouter.gpt-4.1',
   'openrouter:openai/gpt-4.1-mini': 'openrouter.gpt-4.1-mini',
@@ -100,12 +98,12 @@ export const OPENCODE_MODEL_ID_MAP: Record<string, string> = {
   'openrouter:anthropic/claude-3.7-sonnet': 'openrouter.claude-3.7-sonnet',
   'openrouter:google/gemini-2.5-flash-preview:thinking': 'openrouter.gemini-2.5-flash',
   'openrouter:deepseek/deepseek-r1-0528:free': 'openrouter.deepseek-r1-free',
-  
+
   // Google AI (direct)
   'googleai:gemini-2.5-pro-preview-03-25': 'gemini-2.5-pro',
   'googleai:gemini-2.5-flash-preview-04-17': 'gemini-2.5-flash',
   'googleai:gemini-2.0-flash': 'gemini-2.0-flash',
-  
+
   // NVIDIA NIM (uses model ID directly with LOCAL_ENDPOINT)
   'nvidia:meta/llama-3.1-405b-instruct': 'meta/llama-3.1-405b-instruct',
   'nvidia:meta/llama-3.1-70b-instruct': 'meta/llama-3.1-70b-instruct',
@@ -140,8 +138,6 @@ export const OPENCODE_ENV_VAR_MAP: Record<OpenCodeProvider, string> = {
   sambanova: 'SAMBANOVA_API_KEY',
   codestral: 'CODESTRAL_API_KEY',
   mistral: 'MISTRAL_API_KEY',
-  fireworks: 'FIREWORKS_API_KEY',
-  hyperbolic: 'HYPERBOLIC_API_KEY',
   scaleway: 'SCALEWAY_API_KEY',
 }
 
@@ -155,8 +151,6 @@ export const MODELSFREE_TO_OPENCODE_PROVIDER: Partial<Record<ProviderKey, OpenCo
   sambanova: 'sambanova', // SambaNova via LOCAL_ENDPOINT
   codestral: 'codestral', // Codestral via LOCAL_ENDPOINT
   mistral: 'mistral', // Mistral AI via LOCAL_ENDPOINT
-  fireworks: 'fireworks', // Fireworks AI via LOCAL_ENDPOINT
-  hyperbolic: 'hyperbolic', // Hyperbolic via LOCAL_ENDPOINT
   scaleway: 'scaleway', // Scaleway via LOCAL_ENDPOINT
 }
 
@@ -173,17 +167,17 @@ export function isOpenCodeSupported(providerKey: ProviderKey, modelId: string): 
  */
 export function getOpenCodeModelId(providerKey: ProviderKey, modelId: string): string | null {
   const key = `${providerKey}:${modelId}`
-  
+
   // Check exact match first
   if (OPENCODE_MODEL_ID_MAP[key]) {
     return OPENCODE_MODEL_ID_MAP[key]
   }
-  
+
   // For Groq, use the model ID directly
   if (providerKey === 'groq') {
     return modelId
   }
-  
+
   // For OpenRouter, prefix with openrouter.
   if (providerKey === 'openrouter') {
     // Convert model ID to OpenCode format
@@ -192,52 +186,42 @@ export function getOpenCodeModelId(providerKey: ProviderKey, modelId: string): s
       .replace(/:/g, '-')
     return `openrouter.${sanitizedId}`
   }
-  
+
   // For Google AI, use model ID directly
   if (providerKey === 'googleai') {
     return modelId.replace(/-preview.*$/, '').replace(/-04-17$/, '')
   }
-  
+
   // For NVIDIA NIM, use model ID directly (works with LOCAL_ENDPOINT)
   if (providerKey === 'nvidia') {
     return modelId
   }
-  
+
   // For Cerebras, use model ID directly (works with LOCAL_ENDPOINT)
   if (providerKey === 'cerebras') {
     return modelId
   }
-  
+
   // For SambaNova, use model ID directly (works with LOCAL_ENDPOINT)
   if (providerKey === 'sambanova') {
     return modelId
   }
-  
+
   // For Codestral, use model ID directly (works with LOCAL_ENDPOINT)
   if (providerKey === 'codestral') {
     return modelId
   }
-  
+
   // For Mistral AI, use model ID directly (works with LOCAL_ENDPOINT)
   if (providerKey === 'mistral') {
     return modelId
   }
-  
-  // For Fireworks AI, use model ID directly (works with LOCAL_ENDPOINT)
-  if (providerKey === 'fireworks') {
-    return modelId
-  }
-  
-  // For Hyperbolic, use model ID directly (works with LOCAL_ENDPOINT)
-  if (providerKey === 'hyperbolic') {
-    return modelId
-  }
-  
+
   // For Scaleway, use model ID directly (works with LOCAL_ENDPOINT)
   if (providerKey === 'scaleway') {
     return modelId
   }
-  
+
   return null
 }
 
@@ -286,13 +270,13 @@ export function generateOpenCodeConfig(
 ): OpenCodeConfig | null {
   const openCodeProvider = getOpenCodeProvider(providerKey)
   const openCodeModelId = getOpenCodeModelId(providerKey, modelId)
-  
+
   if (!openCodeProvider || !openCodeModelId) {
     return null
   }
-  
+
   // Providers that use LOCAL_ENDPOINT with OpenAI-compatible API
-  if (['nvidia', 'cerebras', 'sambanova', 'codestral', 'mistral', 'fireworks', 'hyperbolic', 'scaleway'].includes(openCodeProvider)) {
+  if (['nvidia', 'cerebras', 'sambanova', 'codestral', 'mistral', 'scaleway'].includes(openCodeProvider)) {
     return {
       providers: {
         openai: {
@@ -321,7 +305,7 @@ export function generateOpenCodeConfig(
       autoCompact: true,
     }
   }
-  
+
   return {
     providers: {
       [openCodeProvider]: {
@@ -361,16 +345,16 @@ export function generateOpenCodeInstructions(
 ): { supported: boolean; instructions: string; modelId?: string; provider?: OpenCodeProvider } {
   const openCodeProvider = getOpenCodeProvider(providerKey)
   const openCodeModelId = getOpenCodeModelId(providerKey, modelId)
-  
+
   if (!openCodeProvider || !openCodeModelId) {
     return {
       supported: false,
       instructions: `This model (${providerKey}/${modelId}) is not directly supported in OpenCode CLI. OpenCode supports: Anthropic, OpenAI, Google Gemini, Groq, OpenRouter, Azure, AWS Bedrock, NVIDIA NIM, and GitHub Copilot.`,
     }
   }
-  
+
   const envVar = OPENCODE_ENV_VAR_MAP[openCodeProvider]
-  
+
   // Provider endpoint mapping for LOCAL_ENDPOINT
   const providerEndpoints: Record<string, string> = {
     nvidia: 'https://integrate.api.nvidia.com/v1',
@@ -378,16 +362,14 @@ export function generateOpenCodeInstructions(
     sambanova: 'https://api.sambanova.ai/v1',
     codestral: 'https://codestral.mistral.ai/v1',
     mistral: 'https://api.mistral.ai/v1',
-    fireworks: 'https://api.fireworks.ai/inference/v1',
-    hyperbolic: 'https://api.hyperbolic.xyz/v1',
     scaleway: 'https://api.scaleway.ai/v1',
   }
-  
+
   // Special instructions for providers that use LOCAL_ENDPOINT
   if (openCodeProvider in providerEndpoints) {
     const endpoint = providerEndpoints[openCodeProvider]
     const providerName = openCodeProvider.charAt(0).toUpperCase() + openCodeProvider.slice(1)
-    
+
     return {
       supported: true,
       modelId: openCodeModelId,
@@ -422,7 +404,7 @@ Note: ${providerName} uses an OpenAI-compatible API, so it works via the LOCAL_E
 `,
     }
   }
-  
+
   return {
     supported: true,
     modelId: openCodeModelId,
@@ -466,16 +448,16 @@ export function generateLaunchScript(
 ): string | null {
   const openCodeProvider = getOpenCodeProvider(providerKey)
   const openCodeModelId = getOpenCodeModelId(providerKey, modelId)
-  
+
   if (!openCodeProvider || !openCodeModelId) {
     return null
   }
-  
+
   const config = generateOpenCodeConfig(providerKey, modelId, apiKey)
   if (!config) return null
-  
+
   const configJson = JSON.stringify(config, null, 2)
-  
+
   // Provider endpoint mapping for LOCAL_ENDPOINT
   const providerEndpoints: Record<string, string> = {
     nvidia: 'https://integrate.api.nvidia.com/v1',
@@ -483,17 +465,15 @@ export function generateLaunchScript(
     sambanova: 'https://api.sambanova.ai/v1',
     codestral: 'https://codestral.mistral.ai/v1',
     mistral: 'https://api.mistral.ai/v1',
-    fireworks: 'https://api.fireworks.ai/inference/v1',
-    hyperbolic: 'https://api.hyperbolic.xyz/v1',
     scaleway: 'https://api.scaleway.ai/v1',
   }
-  
+
   if (isWindows) {
     // Windows batch script
     if (openCodeProvider in providerEndpoints) {
       const endpoint = providerEndpoints[openCodeProvider]
       const envVar = OPENCODE_ENV_VAR_MAP[openCodeProvider]
-      
+
       return `@echo off
 REM OpenCode launcher for ${modelId}
 REM Generated by ModelsFree Dashboard
@@ -517,7 +497,7 @@ opencode
 ENDLOCAL
 `
     }
-    
+
     return `@echo off
 REM OpenCode launcher for ${modelId}
 REM Generated by ModelsFree Dashboard
@@ -534,12 +514,12 @@ opencode
 ENDLOCAL
 `
   }
-  
+
   // Unix shell script
   if (openCodeProvider in providerEndpoints) {
     const endpoint = providerEndpoints[openCodeProvider]
     const envVar = OPENCODE_ENV_VAR_MAP[openCodeProvider]
-    
+
     return `#!/bin/bash
 # OpenCode launcher for ${modelId}
 # Generated by ModelsFree Dashboard
@@ -556,7 +536,7 @@ echo "Launching OpenCode with model: ${openCodeModelId}"
 opencode
 `
   }
-  
+
   return `#!/bin/bash
 # OpenCode launcher for ${modelId}
 # Generated by ModelsFree Dashboard

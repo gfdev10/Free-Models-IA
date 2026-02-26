@@ -5,8 +5,8 @@
 This is a **dashboard-only** project for discovering and comparing free coding LLM models. The project uses a monorepo architecture with pnpm workspaces.
 
 **Current Stats:**
-- **132 models** from **10 providers**
-- Providers: NVIDIA NIM, Groq, Cerebras, SambaNova, OpenRouter, Codestral, Google AI, Mistral AI, Fireworks AI, Hyperbolic
+- **117 models** from **9 providers**
+- Providers: NVIDIA NIM, Groq, Cerebras, SambaNova, OpenRouter, Codestral, Google AI, Mistral AI, Scaleway
 
 ## Architecture
 
@@ -127,8 +127,6 @@ SAMBANOVA_API_KEY=...
 CODESTRAL_API_KEY=...
 GOOGLE_API_KEY=...
 MISTRAL_API_KEY=...
-FIREWORKS_API_KEY=...
-HYPERBOLIC_API_KEY=...
 ```
 
 Copy `.env.example` to `.env.local` and fill in your keys.

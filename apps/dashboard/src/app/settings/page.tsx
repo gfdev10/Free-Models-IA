@@ -5,68 +5,53 @@ import { Key, Eye, EyeOff, Check, X, ExternalLink, RefreshCw, Zap, AlertCircle, 
 
 // Provider metadata for display
 const PROVIDER_INFO: Record<string, { name: string; url: string; envVar: string; keyPrefix?: string; hint?: string }> = {
-  NVIDIA_API_KEY: { 
-    name: 'NVIDIA NIM', 
-    url: 'https://build.nvidia.com', 
+  NVIDIA_API_KEY: {
+    name: 'NVIDIA NIM',
+    url: 'https://build.nvidia.com',
     envVar: 'NVIDIA_API_KEY',
     keyPrefix: 'nvapi-'
   },
-  GROQ_API_KEY: { 
-    name: 'Groq', 
-    url: 'https://console.groq.com/keys', 
+  GROQ_API_KEY: {
+    name: 'Groq',
+    url: 'https://console.groq.com/keys',
     envVar: 'GROQ_API_KEY',
     keyPrefix: 'gsk_'
   },
-  CEREBRAS_API_KEY: { 
-    name: 'Cerebras', 
-    url: 'https://cloud.cerebras.ai', 
+  CEREBRAS_API_KEY: {
+    name: 'Cerebras',
+    url: 'https://cloud.cerebras.ai',
     envVar: 'CEREBRAS_API_KEY'
   },
-  SAMBANOVA_API_KEY: { 
-    name: 'SambaNova', 
-    url: 'https://cloud.sambanova.ai/apis', 
+  SAMBANOVA_API_KEY: {
+    name: 'SambaNova',
+    url: 'https://cloud.sambanova.ai/apis',
     envVar: 'SAMBANOVA_API_KEY'
   },
-  OPENROUTER_API_KEY: { 
-    name: 'OpenRouter', 
-    url: 'https://openrouter.ai/settings/keys', 
+  OPENROUTER_API_KEY: {
+    name: 'OpenRouter',
+    url: 'https://openrouter.ai/settings/keys',
     envVar: 'OPENROUTER_API_KEY',
     keyPrefix: 'sk-or-'
   },
-  CODESTRAL_API_KEY: { 
-    name: 'Codestral', 
-    url: 'https://codestral.mistral.ai', 
+  CODESTRAL_API_KEY: {
+    name: 'Codestral',
+    url: 'https://codestral.mistral.ai',
     envVar: 'CODESTRAL_API_KEY'
   },
-  GOOGLE_API_KEY: { 
-    name: 'Google AI', 
-    url: 'https://aistudio.google.com/apikey', 
+  GOOGLE_API_KEY: {
+    name: 'Google AI',
+    url: 'https://aistudio.google.com/apikey',
     envVar: 'GOOGLE_API_KEY'
   },
-  MISTRAL_API_KEY: { 
-    name: 'Mistral AI', 
-    url: 'https://console.mistral.ai', 
+  MISTRAL_API_KEY: {
+    name: 'Mistral AI',
+    url: 'https://console.mistral.ai',
     envVar: 'MISTRAL_API_KEY'
   },
-  FIREWORKS_API_KEY: { 
-    name: 'Fireworks AI', 
-    url: 'https://fireworks.ai/api-keys', 
-    envVar: 'FIREWORKS_API_KEY',
-    keyPrefix: 'fw_',
-    hint: '$6 free credit on signup, then pay-per-use'
-  },
-  HYPERBOLIC_API_KEY: { 
-    name: 'Hyperbolic', 
-    url: 'https://app.hyperbolic.xyz/settings', 
-    envVar: 'HYPERBOLIC_API_KEY',
-    keyPrefix: 'sk_live_',
-    hint: '$1 free credit on signup, then pay-per-use'
-  },
-  SCALEWAY_API_KEY: { 
-    name: 'Scaleway', 
-    url: 'https://console.scaleway.com/iam/api-keys', 
-    envVar: 'SCALEWAY_API_KEY',
-    hint: 'Free tier available'
+  SCALEWAY_API_KEY: {
+    name: 'Scaleway',
+    url: 'https://console.scaleway.com/iam/api-keys',
+    envVar: 'SCALEWAY_API_KEY'
   },
 }
 
@@ -144,15 +129,6 @@ function ProviderCard({
             <p className="text-xs text-muted-foreground font-mono truncate">{status?.preview}</p>
           )}
         </div>
-        <a
-          href={info.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:text-primary/80 text-xs flex items-center gap-1 shrink-0"
-        >
-          Get Key
-          <ExternalLink className="h-3 w-3" />
-        </a>
       </div>
 
       {isEditing ? (
@@ -289,17 +265,6 @@ function ProviderRow({
         )}
       </td>
       <td className="p-3">
-        <a
-          href={info.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:text-primary/80 text-sm flex items-center gap-1"
-        >
-          Get Key
-          <ExternalLink className="h-3 w-3" />
-        </a>
-      </td>
-      <td className="p-3">
         <div className="flex items-center gap-2">
           {isEditing ? (
             <>
@@ -352,7 +317,7 @@ export default function SettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [pinging, setPinging] = useState(false)
   const [pingResults, setPingResults] = useState<PingResult[]>([])
-  
+
   // Live monitoring state
   const [liveMonitoring, setLiveMonitoring] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -366,7 +331,7 @@ export default function SettingsPage() {
   const loadKeys = () => {
     setLoading(true)
     const loadedKeys: Record<string, KeyStatus> = {}
-    
+
     for (const keyName of Object.keys(PROVIDER_INFO)) {
       const value = localStorage.getItem(keyName)
       loadedKeys[keyName] = {
@@ -374,7 +339,7 @@ export default function SettingsPage() {
         preview: value ? `${value.substring(0, 8)}...${value.substring(value.length - 4)}` : '',
       }
     }
-    
+
     setKeys(loadedKeys)
     setLoading(false)
   }
@@ -420,7 +385,7 @@ export default function SettingsPage() {
     for (const keyName of providers) {
       const status = keys[keyName]
       const info = PROVIDER_INFO[keyName]
-      
+
       if (!status?.set) {
         results.push({
           provider: info.name,
@@ -530,9 +495,8 @@ export default function SettingsPage() {
       </div>
 
       {message && (
-        <div className={`mb-4 p-3 rounded-md flex items-center gap-2 text-sm ${
-          message.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
-        }`}>
+        <div className={`mb-4 p-3 rounded-md flex items-center gap-2 text-sm ${message.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+          }`}>
           {message.type === 'success' ? <Check className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
           {message.text}
         </div>
@@ -545,7 +509,7 @@ export default function SettingsPage() {
           <div>
             <h3 className="font-medium text-sm mb-1">Your Keys, Your Browser</h3>
             <p className="text-xs text-muted-foreground">
-              API keys are stored locally in your browser's localStorage. They are never sent to our servers 
+              API keys are stored locally in your browser's localStorage. They are never sent to our servers
               except to test connectivity directly with each provider. Each user must configure their own keys.
             </p>
           </div>
@@ -640,11 +604,10 @@ export default function SettingsPage() {
           {/* Live Monitoring Toggle */}
           <button
             onClick={toggleLiveMonitoring}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
-              liveMonitoring 
-                ? 'bg-green-500 text-white hover:bg-green-600' 
+            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${liveMonitoring
+                ? 'bg-green-500 text-white hover:bg-green-600'
                 : 'bg-muted text-foreground hover:bg-muted/80'
-            }`}
+              }`}
           >
             {liveMonitoring ? (
               <>

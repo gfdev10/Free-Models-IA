@@ -1,103 +1,90 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/models-132-76b900?logo=nvidia" alt="models count">
-  <img src="https://img.shields.io/badge/providers-10-blue" alt="providers count">
-  <img src="https://img.shields.io/badge/Next.js-15-black?logo=next.js" alt="Next.js">
-  <img src="https://img.shields.io/npm/l/modelsfree?color=76b900" alt="license">
+  <img src="https://img.shields.io/badge/models-117-76b900?style=for-the-badge&logo=nvidia" alt="total models">
+  <img src="https://img.shields.io/badge/providers-9-blue?style=for-the-badge" alt="providers count">
+  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js">
+  <img src="https://img.shields.io/npm/l/modelsfree?style=for-the-badge&color=76b900" alt="license">
 </p>
 
-<h1 align="center">ModelsFree</h1>
+# 🚀 ModelsFree
 
-<p align="center">
-  <strong>Dashboard for discovering and comparing free coding LLM models</strong><br>
-  <sub>Explore 132 models from 10 providers — NVIDIA NIM, Groq, Cerebras, SambaNova, OpenRouter, Codestral, Google AI, Mistral AI, Fireworks AI, and Hyperbolic</sub>
-</p>
+**The Ultimate Discovery Dashboard for Free Coding LLMs.**
 
-<p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-architecture">Architecture</a> •
-  <a href="#-getting-started">Getting Started</a> •
-  <a href="#-providers">Providers</a> •
-  <a href="#-api-keys">API Keys</a>
-</p>
+ModelsFree is a high-performance, developer-centric dashboard designed to help you discover, compare, and integrate free coding-optimized Large Language Models. Built on a modular monorepo architecture, it provides real-time insights into 117+ models from the industry's leading providers.
 
 ---
 
-## ✨ Features
+## 🔥 Key Pillars
 
-### Dashboard
-- **📊 Model Explorer** — Browse all 132 models with search and filters
-- **📈 Statistics** — View tier distribution and provider metrics
-- **⚖️ Model Comparison** — Compare models side-by-side
-- **🔑 API Key Management** — Configure and test provider keys
-- **🌙 Dark/Light Theme** — Toggle between themes
-- **📱 Responsive Design** — Works on desktop and mobile
+### ⚡ Performance First
+Explore models optimized specifically for code generation, sorted by **SWE-bench Verified** scores. Get real-time latency metrics and context window details at a glance.
 
-### Data
-- **🎯 Coding-focused** — Only LLM models optimized for code generation
-- **🌐 Multi-provider** — 10 providers with free tiers or credits
-- **🏷 Tier System** — Models ranked S+, S, A+, A, A-, B+, B, B-, C+, C, D
-- **📏 Context Windows** — From 4K to 10M tokens
-- **🆓 Free Limits** — Clear info on free tier limits per model
+### 🌐 Universal Integration
+Supports **9 major providers** out of the box. Generate configuration files for your favorite CLI tools (like OpenCode) with one click.
+
+### 🔒 Privacy Driven
+Your API keys never leave your browser. All configuration is stored locally in your browser's `localStorage` and sent directly to the provider endpoints.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Technical Architecture
 
-This project uses a **modular monorepo architecture** with pnpm workspaces:
+ModelsFree is built using a modern **Turborepo/pnpm monorepo** structure, ensuring strict type safety and modularity.
 
-```
-modelsfree/
-├── packages/
-│   ├── types/              # TypeScript types & Zod schemas
-│   ├── core/               # Pure business logic
-│   └── providers/          # Provider definitions & model data
-└── apps/
-    └── dashboard/          # Next.js web dashboard
+```mermaid
+graph TD
+    App[apps/dashboard] --> Core[@modelsfree/core]
+    App --> Providers[@modelsfree/providers]
+    App --> Types[@modelsfree/types]
+    Providers --> Core
+    Providers --> Types
+    Core --> Types
 ```
 
-### Packages
-
-| Package | Description |
-|---------|-------------|
-| `@modelsfree/types` | TypeScript types and Zod schemas for runtime validation |
-| `@modelsfree/core` | Pure business logic: metrics, sorting, filtering |
-| `@modelsfree/providers` | Provider configurations and model data (132 models) |
-
-### Dashboard Stack
-
-- **Next.js 15** — App Router
-- **TypeScript** — Strict typing
-- **Tailwind CSS** — Styling
-- **shadcn/ui** — UI components
-- **TanStack Query** — Data fetching
-- **Zod** — Runtime validation
+### 📦 Modular Breakdown
+- **`@modelsfree/types`**: Single source of truth for Zod schemas and TypeScript interfaces.
+- **`@modelsfree/core`**: Pure business logic for metrics calculation, sorting, and filtering algorithms.
+- **`@modelsfree/providers`**: Deeply typed model definitions and provider-specific configurations.
+- **`apps/dashboard`**: A premium Next.js 15 frontend with Shadcn/UI and dark mode support.
 
 ---
 
-## 🚀 Getting Started
+## 🌐 Supported Providers
 
-### Prerequisites
+| Provider | Models | Best For | API Key Link |
+| :--- | :---: | :--- | :--- |
+| **NVIDIA NIM** | 43 | High context & speed | [Get NIM Key](https://build.nvidia.com) |
+| **Groq** | 11 | Ultra-low latency | [Get Groq Key](https://console.groq.com/keys) |
+| **OpenRouter** | 26 | Universal model access | [Get OR Key](https://openrouter.ai/keys) |
+| **Google AI** | 6 | Gemini & Gemma ecosystem | [Get AI Studio Key](https://aistudio.google.com/apikey) |
+| **SambaNova** | 12 | Large model trial credits | [Get SambaNova Key](https://cloud.sambanova.ai) |
+| **Cerebras** | 4 | Real-time performance | [Get Cerebras Key](https://cloud.cerebras.ai) |
+| **Mistral AI** | 8 | Native Mistral models | [Get Mistral Key](https://console.mistral.ai) |
+| **Scaleway** | 6 | European cloud hosting | [Get Scaleway Key](https://console.scaleway.com) |
+| **Codestral** | 1 | Dedicated coding API | [Get Codestral Key](https://codestral.mistral.ai) |
 
-- Node.js 18+
-- pnpm 8+
+---
 
-### Installation
+## 🛠️ Getting Started
+
+### 1. Installation
+Clone the repository and install dependencies using **pnpm**.
 
 ```bash
-# Clone the repository
 git clone https://github.com/gfdev10/Free-Models-IA.git
 cd Free-Models-IA
-
-# Install dependencies
 pnpm install
-
-# Start development server
-pnpm dev
 ```
 
-The dashboard will be available at `http://localhost:3000`
+### 2. Development
+Launch the dashboard in development mode.
 
-### Build for Production
+```bash
+pnpm dev
+```
+Open [http://localhost:3000](http://localhost:3000) to explore the local dashboard.
+
+### 3. Build & Production
+Generate a production-ready bundle.
 
 ```bash
 pnpm build
@@ -106,165 +93,30 @@ pnpm start
 
 ---
 
-## 🌐 Providers
+## 🔑 Environment Setup
 
-| Provider | Models | Free Tier | API Key |
-|----------|--------|-----------|---------|
-| **NVIDIA NIM** | 44 | Free API, rate limits | [Get Key](https://build.nvidia.com) |
-| **Groq** | 11 | Free tier, fast inference | [Get Key](https://console.groq.com/keys) |
-| **Cerebras** | 4 | Free credits | [Get Key](https://cloud.cerebras.ai) |
-| **SambaNova** | 12 | $5 free trial | [Get Key](https://cloud.sambanova.ai/apis) |
-| **OpenRouter** | 26 | 50 free req/day | [Get Key](https://openrouter.ai/settings/keys) |
-| **Codestral** | 1 | 30 req/min | [Get Key](https://codestral.mistral.ai) |
-| **Google AI** | 6 | 14.4K req/day | [Get Key](https://aistudio.google.com/apikey) |
-| **Mistral AI** | 8 | Free tier available | [Get Key](https://console.mistral.ai) |
-| **Fireworks AI** | 7 | $6 free credit | [Get Key](https://fireworks.ai/api-keys) |
-| **Hyperbolic** | 13 | $1 free credit | [Get Key](https://app.hyperbolic.xyz/settings) |
-
----
-
-## 🔑 API Keys
-
-API keys are stored locally in `.env.local` and are never sent to any server except the respective provider APIs.
-
-### Setting Up Keys
-
-1. Open the dashboard at `http://localhost:3000`
-2. Go to **Settings**
-3. Click **Add** next to a provider
-4. Paste your API key
-5. Click **Test All Keys** to verify
-
-### Environment Variables
-
-Create a `.env.local` file in `apps/dashboard/`:
+Configure your API keys in `apps/dashboard/.env.local` to enable global access, or use the in-dashboard **Settings** page for browser-local storage.
 
 ```env
-NVIDIA_API_KEY=nvapi-xxx
-GROQ_API_KEY=gsk_xxx
-CEREBRAS_API_KEY=csk-xxx
-SAMBANOVA_API_KEY=xxx
-OPENROUTER_API_KEY=sk-or-xxx
-CODESTRAL_API_KEY=xxx
-GOOGLE_API_KEY=AIzaxxx
-MISTRAL_API_KEY=xxx
-FIREWORKS_API_KEY=fw_xxx
-HYPERBOLIC_API_KEY=sk_live_xxx
+NVIDIA_API_KEY=your_key
+OPENROUTER_API_KEY=your_key
+GROQ_API_KEY=your_key
+CEREBRAS_API_KEY=your_key
+SAMBANOVA_API_KEY=your_key
+CODESTRAL_API_KEY=your_key
+GOOGLE_API_KEY=your_key
+MISTRAL_API_KEY=your_key
+SCALEWAY_API_KEY=your_key
 ```
 
 ---
 
-## 📊 Model Tiers
+## 📊 Deployment
 
-Models are ranked by SWE-bench Verified score:
-
-| Tier | Score Range | Description |
-|------|-------------|-------------|
-| **S+** | ≥70% | Elite frontier coders |
-| **S** | 60-70% | Top-tier models |
-| **A+** | 50-60% | Excellent performance |
-| **A** | 40-50% | Great for most tasks |
-| **A-** | 35-40% | Good performance |
-| **B+** | 30-35% | Solid coding ability |
-| **B** | 20-30% | Adequate for simple tasks |
-| **B-** | 15-20% | Basic coding |
-| **C+** | 10-15% | Limited capability |
-| **C** | 5-10% | Minimal coding |
-| **D** | <5% | Not recommended |
-
----
-
-## 📁 Project Structure
-
-```
-modelsfree/
-├── packages/
-│   ├── types/
-│   │   ├── src/
-│   │   │   └── index.ts      # All TypeScript types & Zod schemas
-│   │   └── package.json
-│   ├── core/
-│   │   ├── src/
-│   │   │   └── index.ts      # Business logic (sorting, filtering, metrics)
-│   │   └── package.json
-│   └── providers/
-│       ├── src/
-│       │   └── index.ts      # Provider configs & model definitions
-│       └── package.json
-├── apps/
-│   └── dashboard/
-│       ├── src/
-│       │   ├── app/          # Next.js App Router pages
-│       │   ├── components/   # React components
-│       │   └── lib/          # Utilities
-│       ├── public/
-│       └── package.json
-├── pnpm-workspace.yaml
-├── tsconfig.json
-└── package.json
-```
-
----
-
-## 🛠️ Development
-
-### Commands
-
-```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
-
-# Build all packages and dashboard
-pnpm build
-
-# Run tests
-pnpm test
-
-# Type check
-pnpm lint
-```
-
-### Adding a New Provider
-
-1. Add provider key to `packages/types/src/index.ts`:
-```typescript
-export const ProviderKeySchema = z.enum([
-  'nvidia', 'groq', ..., 'newprovider'
-])
-```
-
-2. Add provider config to `packages/providers/src/index.ts`:
-```typescript
-export const newproviderModels: ModelTuple[] = [
-  ['model-id', 'Model Name', 'A', '45.0%', '128k'],
-]
-```
-
-3. Update dashboard settings page with new API key field
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Deployed with ❤️ via **Vercel**. Check out the live version: [modelsfree.vercel.app](https://modelsfree.vercel.app)
 
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://gfdev.vercel.app">gfdev</a>
+  Built by <strong><a href="https://gfdev.vercel.app">gfdev</a></strong> • Licensed under MIT
 </p>

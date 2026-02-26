@@ -28,7 +28,6 @@ import {
   sambanovaModels,
   openrouterModels,
   codestralModels,
-  hyperbolicModels,
   scalewayModels,
   googleaiModels,
 } from '@modelsfree/providers'
@@ -78,7 +77,6 @@ providers.nvidia
 | SambaNova | `sambanova` | `SAMBANOVA_API_KEY` | - |
 | OpenRouter | `openrouter` | `OPENROUTER_API_KEY` | `sk-or-` |
 | Codestral | `codestral` | `CODESTRAL_API_KEY` | - |
-| Hyperbolic | `hyperbolic` | `HYPERBOLIC_API_KEY` | - |
 | Scaleway | `scaleway` | `SCALEWAY_API_KEY` | - |
 | Google AI | `googleai` | `GOOGLE_API_KEY` | - |
 
